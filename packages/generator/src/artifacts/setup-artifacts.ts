@@ -332,10 +332,16 @@ function setupJsxCreateStyleContext(ctx: Context): Artifact | undefined {
     id: 'jsx-create-style-context',
     dir: ctx.paths.jsx,
     files: [
-      { file: ctx.file.ext('create-style-context'), code: createStyleContext.js },
+      // the `.qwik` infix is required for the Qwik optimizer to process the
+      // file (it only transforms .jsx/.ts/.tsx and *.qwik.[mc]js sources)
+      { file: ctx.file.ext(styleContextFileName(ctx)), code: createStyleContext.js },
       { file: ctx.file.extDts('create-style-context'), code: createStyleContext.dts },
     ],
   }
+}
+
+function styleContextFileName(ctx: Context) {
+  return ctx.jsx.framework === 'qwik' ? 'create-style-context.qwik' : 'create-style-context'
 }
 
 function setupJsxPatternsIndex(ctx: Context): Artifact | undefined {
@@ -343,19 +349,19 @@ function setupJsxPatternsIndex(ctx: Context): Artifact | undefined {
 
   const isStyleProp = !ctx.isTemplateLiteralSyntax
   const patternNames = ctx.patterns.details.map((pattern) => pattern.dashName)
-  const styleContextExclude = ['qwik', 'svelte']
+  const styleContextExclude = ['svelte']
 
   const index = {
     js: outdent`
   ${ctx.file.exportStar('./factory')}
   ${isStyleProp ? ctx.file.exportStar('./is-valid-prop') : ''}
-  ${isStyleProp && !styleContextExclude.includes(ctx.jsx.framework) ? ctx.file.exportStar('./create-style-context') : ''}
+  ${isStyleProp && !styleContextExclude.includes(ctx.jsx.framework) ? ctx.file.exportStar(`./${styleContextFileName(ctx)}`) : ''}
   ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')) : ''}
   `,
     dts: outdent`
   ${ctx.file.exportTypeStar('./factory')}
   ${isStyleProp ? ctx.file.exportTypeStar('./is-valid-prop') : ''}
-  ${isStyleProp ? ctx.file.exportTypeStar('./create-style-context') : ''}
+  ${isStyleProp && !styleContextExclude.includes(ctx.jsx.framework) ? ctx.file.exportTypeStar('./create-style-context') : ''}
   ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n')) : ''}
   ${ctx.file.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
     `,

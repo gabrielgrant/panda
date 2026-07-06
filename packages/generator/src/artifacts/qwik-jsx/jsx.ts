@@ -6,7 +6,7 @@ export function generateQwikJsxFactory(ctx: Context) {
 
   return {
     js: outdent`
-    import { h } from '@builder.io/qwik'
+    import { h } from '@qwik.dev/core'
     ${ctx.file.import(
       'defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName',
       './factory-helper',

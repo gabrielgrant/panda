@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { qwikVite } from '@qwik.dev/core/optimizer'
 import solid from 'vite-plugin-solid'
 import Vue from '@vitejs/plugin-vue'
 import preact from '@preact/preset-vite'
@@ -108,6 +109,7 @@ const options: TestUserConfig = {
     },
   },
   qwik: {
+    plugins: [qwikVite()],
     test: {
       include: ['**/__tests__/**/frameworks/qwik.*.{test,spec}.{j,t}s?(x)'],
       typecheck: { enabled: typecheck, include: ['**/__tests__/**/frameworks/qwik.*.{test,spec}.{j,t}s?(x)'] },

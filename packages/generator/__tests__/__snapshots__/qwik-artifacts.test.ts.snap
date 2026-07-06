@@ -1,0 +1,395 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`qwik artifacts > create-style-context 1`] = `
+"import { Slot, component$, createContextId, h, useContext, useContextProvider, useStore } from '@qwik.dev/core'
+import { css, cx, sva } from '../css/index.mjs';
+import { splitProps, normalizeHTMLProps } from '../helpers.mjs';
+import { isCssProperty } from './is-valid-prop.mjs';
+
+const styleContextNotFound = { __pandaStyleContextNotFound: true }
+
+// detected by marker property, not identity: Qwik serializes the
+// useContext default, so after resume the sentinel is a deserialized copy
+const isStyleContextNotFound = (value) => typeof value === 'object' && value !== null && '__pandaStyleContextNotFound' in value
+
+const missingProviderError = (recipeName, slot) => {
+  const contextName = recipeName ? \`createStyleContext("\${recipeName}")\` : 'createStyleContext'
+  return new Error(\`A component (slot: "\${slot}") cannot access \${contextName} because it's missing its Provider.\`)
+}
+
+const resolveStyledProps = (slotStyle, isConfigRecipe, unstyled, restProps) => {
+  const [htmlProps, styleProps, elementProps] = splitProps(restProps, normalizeHTMLProps.keys, isCssProperty)
+const { css: cssStyles, ...propStyles } = styleProps
+const { class: klass, className, ...forwardedProps } = elementProps
+const userClass = cx(klass, className)
+let resolvedClass
+if (unstyled) {
+  resolvedClass = cx(css(propStyles, cssStyles), userClass)
+} else if (isConfigRecipe) {
+  resolvedClass = cx(slotStyle, css(propStyles, cssStyles), userClass)
+} else {
+  resolvedClass = cx(css(slotStyle, propStyles, cssStyles), userClass)
+}
+return [resolvedClass, { ...forwardedProps, ...normalizeHTMLProps(htmlProps) }]
+}
+
+const StyleProvider = component$((props) => {
+  const {
+    __ctx, __styles, __classNameMap, __slot, __isConfig, __unstyled, __cmp, __fwd, as: asElement, ...restProps
+  } = props
+  const store = useStore({ styles: props.__styles, classNameMap: props.__classNameMap })
+  store.styles = props.__styles
+  store.classNameMap = props.__classNameMap
+  useContextProvider(createContextId(__ctx), store)
+  const [resolvedClass, forwardedProps] = resolveStyledProps(__styles[__slot], __isConfig, __unstyled, restProps)
+  return h(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, __classNameMap?.[__slot]) }, h(Slot, {}))
+})
+
+const StyleRootProvider = component$((props) => {
+  const { __ctx, __styles, __classNameMap, __cmp, ...restProps } = props
+  const store = useStore({ styles: props.__styles, classNameMap: props.__classNameMap })
+  store.styles = props.__styles
+  store.classNameMap = props.__classNameMap
+  useContextProvider(createContextId(__ctx), store)
+  return h(__cmp, restProps, h(Slot, {}))
+})
+
+const StyleConsumer = component$((props) => {
+  const {
+    __ctx, __slot, __isConfig, __unstyled, __cmp, __fwd, __recipeName, as: asElement, ...restProps
+  } = props
+  const store = useContext(createContextId(__ctx), styleContextNotFound)
+  if (isStyleContextNotFound(store)) throw missingProviderError(__recipeName, __slot)
+  const [resolvedClass, forwardedProps] = resolveStyledProps(store.styles[__slot], __isConfig, __unstyled, restProps)
+  return h(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, store.classNameMap?.[__slot]) }, h(Slot, {}))
+})
+
+let anonymousContextCount = 0
+
+export function createStyleContext(recipe) {
+  const isConfigRecipe = '__recipe__' in recipe
+  const recipeName = isConfigRecipe && recipe.__name__ ? recipe.__name__ : undefined
+  const contextName = \`panda.style-context.\${recipeName ?? \`anonymous-\${++anonymousContextCount}\`}\`
+  const svaFn = isConfigRecipe ? recipe : sva(recipe.config)
+
+  const getSlotStyles = (variantProps) => {
+    return isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
+  }
+
+  const mergeDefaultProps = (props, options) => {
+    const defaultProps = {
+      ...(options?.dataAttr && recipeName ? { 'data-recipe': recipeName } : {}),
+      ...options?.defaultProps,
+    }
+    return { ...defaultProps, ...props }
+  }
+
+  // props passing a custom shouldForwardProp bypass style processing and
+  // are spread onto the element as-is (same bucket order as the factory)
+  const splitForwardedProps = (restProps, options) => {
+    if (!options?.shouldForwardProp) return [undefined, restProps]
+    const forwarded = {}
+    const rest = {}
+    for (const key of Object.keys(restProps)) {
+      if (key !== 'children' && options.shouldForwardProp(key, svaFn.variantKeys ?? [])) {
+        forwarded[key] = restProps[key]
+      } else {
+        rest[key] = restProps[key]
+      }
+    }
+    return [forwarded, rest]
+  }
+
+  const withRootProvider = (Component, options) => {
+    const WithRootProvider = (props) => {
+      const [variantProps, restProps] = svaFn.splitVariantProps(mergeDefaultProps(props, options))
+      const slotStyles = getSlotStyles(variantProps)
+      return h(StyleRootProvider, {
+        __ctx: contextName,
+        __styles: slotStyles,
+        __classNameMap: svaFn.classNameMap,
+        __cmp: Component,
+        ...restProps,
+      })
+    }
+    return WithRootProvider
+  }
+
+  const withProvider = (Component, slot, options) => {
+    const WithProvider = (props) => {
+      const { unstyled, ...propsWithDefaults } = mergeDefaultProps(props, options)
+      const [variantProps, nonVariantProps] = svaFn.splitVariantProps(propsWithDefaults)
+      const [forwarded, restProps] = splitForwardedProps(nonVariantProps, options)
+      options?.forwardProps?.forEach((key) => {
+        if (key in variantProps) restProps[key] = variantProps[key]
+      })
+      const slotStyles = getSlotStyles(variantProps)
+      return h(StyleProvider, {
+        __ctx: contextName,
+        __styles: slotStyles,
+        __classNameMap: svaFn.classNameMap,
+        __slot: slot,
+        __isConfig: isConfigRecipe,
+        __unstyled: unstyled,
+        __cmp: Component,
+        __fwd: forwarded,
+        ...restProps,
+      })
+    }
+    return WithProvider
+  }
+
+  const withContext = (Component, slot, options) => {
+    const WithContext = (props) => {
+      const { unstyled, ...propsWithDefaults } = mergeDefaultProps(props, options)
+      const [forwarded, restProps] = splitForwardedProps(propsWithDefaults, options)
+      return h(StyleConsumer, {
+        __ctx: contextName,
+        __slot: slot,
+        __isConfig: isConfigRecipe,
+        __unstyled: unstyled,
+        __cmp: Component,
+        __fwd: forwarded,
+        __recipeName: recipeName,
+        ...restProps,
+      })
+    }
+    return WithContext
+  }
+
+  return {
+    withRootProvider,
+    withProvider,
+    withContext,
+  }
+}"
+`;
+
+exports[`qwik artifacts > create-style-context 2`] = `
+"/* eslint-disable */
+import type { SlotRecipeRuntimeFn, RecipeVariantProps } from '../types/recipe';
+import type { JsxHTMLProps, JsxStyleProps, Assign } from '../types/system-types';
+import type { JsxFactoryOptions, ComponentProps, DataAttrs, ElementType, UnstyledProps, AsProps } from '../types/jsx';
+import type { FunctionComponent } from '@qwik.dev/core'
+
+type SvaFn<S extends string = any> = SlotRecipeRuntimeFn<S, any>
+interface SlotRecipeFn {
+  __type: any
+  __slot: string
+  (props?: any): any
+}
+type SlotRecipe = SvaFn | SlotRecipeFn
+
+type InferSlot<R extends SlotRecipe> = R extends SlotRecipeFn ? R['__slot'] : R extends SvaFn<infer S> ? S : never
+
+interface WithProviderOptions<P = {}> {
+  defaultProps?: (Partial<P> & DataAttrs) | undefined
+}
+
+type StyleContextProvider<T extends ElementType, R extends SlotRecipe> = FunctionComponent<
+  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<RecipeVariantProps<R>, JsxStyleProps>>
+>
+
+type StyleContextRootProvider<T extends ElementType, R extends SlotRecipe> = FunctionComponent<
+  ComponentProps<T> & UnstyledProps & RecipeVariantProps<R>
+>
+
+type StyleContextConsumer<T extends ElementType> = FunctionComponent<
+  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
+>
+
+export interface StyleContext<R extends SlotRecipe> {
+  withRootProvider: <T extends ElementType>(
+    Component: T,
+    options?: WithProviderOptions<ComponentProps<T>> | undefined
+  ) => StyleContextRootProvider<T, R>
+  withProvider: <T extends ElementType>(
+    Component: T,
+    slot: InferSlot<R>,
+    options?: JsxFactoryOptions<ComponentProps<T>> | undefined
+  ) => StyleContextProvider<T, R>
+  withContext: <T extends ElementType>(
+    Component: T,
+    slot: InferSlot<R>,
+    options?: JsxFactoryOptions<ComponentProps<T>> | undefined
+  ) => StyleContextConsumer<T>
+}
+
+/**
+ * Create a style context from a slot recipe.
+ *
+ * Qwik notes:
+ * - The produced components must be created at module top level (they are
+ *   plain wrapper components around static \`component$\` hosts).
+ * - The wrapped \`Component\` must be a tag name or a \`component$\` (it is
+ *   passed across a serialization boundary). Inline (plain-function)
+ *   components are not supported.
+ */
+export declare function createStyleContext<R extends SlotRecipe>(recipe: R): StyleContext<R>"
+`;
+
+exports[`qwik artifacts > jsx factory 1`] = `
+"import { h } from '@qwik.dev/core'
+import { defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName } from './factory-helper.mjs';
+import { isCssProperty } from './is-valid-prop.mjs';
+import { css, cx, cva } from '../css/index.mjs';
+import { splitProps, normalizeHTMLProps } from '../helpers.mjs';
+
+function styledFn(Dynamic, configOrCva = {}, options = {}) {
+  const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
+
+  const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
+  const shouldForwardProp = (prop) => {
+    if (options.forwardProps?.includes(prop)) return true
+    return forwardFn(prop, cvaFn.variantKeys)
+  }
+
+  const defaultProps = Object.assign(
+    options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
+    options.defaultProps,
+  )
+
+  const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
+  const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
+  const __base__ = Dynamic.__base__ || Dynamic
+
+  const StyledComponent = function StyledComponent(props) {
+    const { as: Element = __base__, unstyled, children, className, ...restProps } = props
+
+    const combinedProps = Object.assign({}, defaultProps, restProps)
+
+    const [htmlProps, forwardedProps, variantProps, styleProps, elementProps] =
+      splitProps(combinedProps, normalizeHTMLProps.keys, __shouldForwardProps__, __cvaFn__.variantKeys, isCssProperty)
+
+    const { css: cssStyles, ...propStyles } = styleProps
+
+    function recipeClass() {
+      const { css: cssStyles, ...propStyles } = styleProps
+      const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps);
+      return cx(__cvaFn__(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.class, className)
+    }
+
+    function cvaClass() {
+      const { css: cssStyles, ...propStyles } = styleProps
+      const cvaStyles = __cvaFn__.raw(variantProps)
+      return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.class, className)
+    }
+
+    const classes = () => {
+      if (unstyled) {
+        const { css: cssStyles, ...propStyles } = styleProps
+        return cx(css(propStyles, cssStyles), combinedProps.class, className)
+      }
+      return configOrCva.__recipe__ ? recipeClass() : cvaClass()
+    }
+
+    return h(Element, {
+      ...forwardedProps,
+      ...elementProps,
+      ...normalizeHTMLProps(htmlProps),
+      class: classes(),
+    }, children ?? combinedProps.children)
+  }
+
+  const name = getDisplayName(__base__)
+
+  StyledComponent.displayName = \`styled.\${name}\`
+  StyledComponent.__cva__ = __cvaFn__
+  StyledComponent.__base__ = __base__
+  StyledComponent.__shouldForwardProps__ = shouldForwardProp
+
+  return StyledComponent
+}
+
+function createJsxFactory() {
+  const cache = new Map()
+
+  return new Proxy(styledFn, {
+    apply(_, __, args) {
+      return styledFn(...args)
+    },
+    get(_, el) {
+      if (!cache.has(el)) {
+        cache.set(el, styledFn(el))
+      }
+      return cache.get(el)
+    },
+  })
+}
+
+export const styled = /* @__PURE__ */ createJsxFactory()
+"
+`;
+
+exports[`qwik artifacts > jsx types 1`] = `
+"/* eslint-disable */
+import type { Component, QwikIntrinsicElements } from '@qwik.dev/core'
+import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe';
+import type { Assign, DistributiveOmit, DistributiveUnion, JsxStyleProps, PatchedHTMLProps, Pretty } from './system-types';
+
+export type ElementType = keyof QwikIntrinsicElements | Component<any>
+
+export type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
+  ? QwikIntrinsicElements[T]
+  : T extends Component<infer P>
+  ? P
+  : never
+
+interface Dict {
+  [k: string]: unknown
+}
+
+export type DataAttrs = Record<\`data-\${string}\`, unknown>
+
+export interface UnstyledProps {
+  /**
+   * Whether to remove recipe styles
+   */
+  unstyled?: boolean | undefined
+}
+
+export interface AsProps {
+  /**
+   * The element to render as
+   */
+  as?: ElementType | undefined
+}
+
+export interface StyledComponent<T extends ElementType, P extends Dict = {}> extends Component<Assign<ComponentProps<T> & UnstyledProps & AsProps, Assign<PatchedHTMLProps, Assign<JsxStyleProps, P>>>> {}
+
+interface RecipeFn {
+  __type: any
+}
+
+export interface JsxFactoryOptions<TProps extends Dict> {
+  dataAttr?: boolean
+  defaultProps?: Partial<TProps> & DataAttrs
+  shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
+  forwardProps?: string[]
+}
+
+export type JsxRecipeProps<T extends ElementType, P extends Dict> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, P>;
+
+export type JsxElement<T extends ElementType, P extends Dict> = T extends StyledComponent<infer A, infer B>
+  ? StyledComponent<A, Pretty<DistributiveUnion<P, B>>>
+  : StyledComponent<T, P>
+
+export interface JsxFactory {
+  <T extends ElementType>(component: T): StyledComponent<T, {}>
+  <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<
+    T,
+    RecipeSelection<P>
+  >
+  <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P['__type']>>): JsxElement<T, P['__type']>
+}
+
+export type JsxElements = {
+  [K in keyof QwikIntrinsicElements]: StyledComponent<K, {}>
+}
+
+export type Styled = JsxFactory & JsxElements
+
+export type HTMLStyledProps<T extends ElementType> = Assign<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
+
+export type StyledVariantProps<T extends StyledComponent<any, any>> = T extends StyledComponent<any, infer Props> ? Props : never"
+`;

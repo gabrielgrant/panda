@@ -6,7 +6,7 @@ export function generateQwikJsxStringLiteralFactory(ctx: Context) {
 
   return {
     js: outdent`
-    import { h } from '@builder.io/qwik'
+    import { h } from '@qwik.dev/core'
     ${ctx.file.import('getDisplayName', './factory-helper')}
     ${ctx.file.import('css, cx', '../css/index')}
 

@@ -8,7 +8,12 @@ import {
 } from './preact-jsx'
 import { generatePreactJsxStringLiteralFactory } from './preact-jsx/jsx.string-literal'
 import { generatePreactJsxStringLiteralTypes } from './preact-jsx/types.string-literal'
-import { generateQwikJsxFactory, generateQwikJsxPattern, generateQwikJsxTypes } from './qwik-jsx'
+import {
+  generateQwikJsxFactory,
+  generateQwikJsxPattern,
+  generateQwikJsxTypes,
+  generateQwikCreateStyleContext,
+} from './qwik-jsx'
 import { generateQwikJsxStringLiteralFactory } from './qwik-jsx/jsx.string-literal'
 import { generateQwikJsxStringLiteralTypes } from './qwik-jsx/types.string-literal'
 import {
@@ -121,6 +126,7 @@ const createStyleContextMap = {
   preact: generatePreactCreateStyleContext,
   solid: generateSolidCreateStyleContext,
   vue: generateVueCreateStyleContext,
+  qwik: generateQwikCreateStyleContext,
 }
 
 export function generateJsxCreateStyleContext(ctx: Context) {

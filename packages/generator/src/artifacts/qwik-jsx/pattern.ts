@@ -15,7 +15,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
     return {
       name: dashName,
       js: outdent`
-      import { h } from '@builder.io/qwik'
+      import { h } from '@qwik.dev/core'
       ${jsxStyleProps === 'minimal' ? ctx.file.import('mergeCss', '../css/css') : ''}
       ${ctx.file.import('splitProps', '../helpers')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
@@ -62,7 +62,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
       `,
 
       dts: outdent`
-      import type { Component } from '@builder.io/qwik'
+      import type { Component } from '@qwik.dev/core'
       ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
       ${ctx.file.importType(typeName, '../types/jsx')}
       ${ctx.file.importType('Assign, DistributiveOmit', '../types/system-types')}

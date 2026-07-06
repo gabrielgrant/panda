@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "target": "ES2017",
-    "module": "ES2022",
+    "target": "ES2022",
+    "module": "ESNext",
     "lib": ["es2022", "DOM", "WebWorker", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "jsxImportSource": "@builder.io/qwik",
+    "jsxImportSource": "@qwik.dev/core",
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "incremental": true,
@@ -22,6 +22,5 @@
       "styled-system/*": ["./styled-system/*"]
     }
   },
-  "files": ["./.eslintrc.cjs"],
   "include": ["src", "./*.d.ts", "panda.config.ts"]
 }

@@ -1,11 +1,17 @@
-/** @jsxImportSource @builder.io/qwik */
-import React from 'react'
-import { createDOM } from '@builder.io/qwik/testing'
+/** @jsxImportSource @qwik.dev/core */
+import { ssrRenderToDom } from '@qwik.dev/core/testing'
 import { describe, expect, test } from 'vitest'
 import { Box, Stack, styled } from '../../styled-system-qwik/jsx'
 import { buttonWithCompoundVariants } from '../../styled-system-qwik/recipes'
 
-describe('styled factory - cva', async () => {
+const renderToDocument = async (jsx: any) => {
+  const { document } = await ssrRenderToDom(jsx, { qwikLoader: true })
+  return document as Document
+}
+
+const classOf = (document: Document, selector: string) => document.querySelector(selector)?.getAttribute('class')
+
+describe('styled factory - cva', () => {
   const Button = styled('button', {
     base: {
       color: 'red.500',
@@ -43,115 +49,83 @@ describe('styled factory - cva', async () => {
   })
 
   test('base styles', async () => {
-    const { render, screen } = await createDOM()
-    await render(<Button>Click me</Button>)
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600">Click me</button>"`,
-    )
+    const document = await renderToDocument(<Button>Click me</Button>)
+    expect(classOf(document, 'button')).toBe('c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600')
   })
 
   test('variant styles', async () => {
-    const { render, screen } = await createDOM()
-    await render(<Button size="sm">Click me</Button>)
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_sm px_sm py_xs">Click me</button>"`,
-    )
+    const document = await renderToDocument(<Button size="sm">Click me</Button>)
+    expect(classOf(document, 'button')).toBe('c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_sm px_sm py_xs')
   })
 
   test('compound variants', async () => {
-    const { render, screen } = await createDOM()
-    await render(<Button size="lg">Click me</Button>)
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_lg px_123px py_md z_1">Click me</button>"`,
+    const document = await renderToDocument(<Button size="lg">Click me</Button>)
+    expect(classOf(document, 'button')).toBe(
+      'c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_lg px_123px py_md z_1',
     )
   })
 
   test('custom className', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" size="sm">
         Click me
       </Button>,
     )
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_sm px_sm py_xs custom-btn">Click me</button>"`,
+    expect(classOf(document, 'button')).toBe(
+      'c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_sm px_sm py_xs custom-btn',
     )
   })
 
   test('style prop', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" mx="2">
         Click me
       </Button>,
     )
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600 mx_2 custom-btn">Click me</button>"`,
+    expect(classOf(document, 'button')).toBe(
+      'c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600 mx_2 custom-btn',
     )
   })
 
   test('style prop with variant', async () => {
-    const { render, screen } = await createDOM()
-
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" size="sm" mx="2">
         Click me
       </Button>,
     )
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_sm px_sm py_xs mx_2 custom-btn">Click me</button>"`,
+    expect(classOf(document, 'button')).toBe(
+      'c_red.500 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_sm px_sm py_xs mx_2 custom-btn',
     )
   })
 
   test('css prop', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
       </Button>,
     )
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="c_red.100 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_md custom-btn">Click me</button>"`,
-    )
+    expect(classOf(document, 'button')).toBe('c_red.100 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_md custom-btn')
   })
 
   test('css prop with variant', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" size="sm" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
       </Button>,
     )
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="c_red.100 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_md px_sm py_xs custom-btn">Click me</button>"`,
+    expect(classOf(document, 'button')).toBe(
+      'c_red.100 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_md px_sm py_xs custom-btn',
     )
   })
 
   test('all together', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
         Click me
       </Button>,
     )
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="c_red.200 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_xl px_123px py_md z_1 mx_2 custom-btn">Click me</button>"`,
+    expect(classOf(document, 'button')).toBe(
+      'c_red.200 bg_blue.500 hover:c_red.600 hover:bg_blue.600 fs_xl px_123px py_md z_1 mx_2 custom-btn',
     )
   })
 
@@ -174,11 +148,10 @@ describe('styled factory - cva', async () => {
     })
     const WithSize = styled(StyledButton, {
       base: {
-        colorPalette: 'blue', // adding new key
+        colorPalette: 'blue',
       },
       variants: {
         size: {
-          // new variant
           sm: { px: '2', fontSize: '12px' },
           lg: { px: '8', fontSize: '24px' },
         },
@@ -186,203 +159,145 @@ describe('styled factory - cva', async () => {
     })
     const WithOverrides = styled(WithSize, {
       base: {
-        borderWidth: '4px', // adding new key
-        h: '20', // overriding 1st cva
+        borderWidth: '4px',
+        h: '20',
       },
       variants: {
         visual: {
           outline: {
-            // extend 1st cva
             colorPalette: 'red',
           },
         },
         size: {
-          lg: { px: '12', fontSize: '32px' }, // override 2nd cva
-          '2xl': { px: '20', fontSize: '40px' }, // add new one
+          lg: { px: '12', fontSize: '32px' },
+          '2xl': { px: '20', fontSize: '40px' },
         },
       },
     })
 
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <WithOverrides visual="outline" size="lg">
         Click me
       </WithOverrides>,
     )
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="fw_semibold h_20 color-palette_red bd-w_4px bd-c_currentColor px_12 fs_32px">Click me</button>"`,
-    )
+    expect(classOf(document, 'button')).toBe('fw_semibold h_20 color-palette_red bd-w_4px bd-c_currentColor px_12 fs_32px')
 
-    const second = await createDOM()
-    await second.render(
+    const second = await renderToDocument(
       <WithOverrides visual="solid" size="2xl">
         Click me
       </WithOverrides>,
     )
-    const container2 = second.screen.querySelector('button')!
-    expect(container2.outerHTML).toMatchInlineSnapshot(
-      `"<button class="fw_semibold h_20 color-palette_blue bd-w_4px c_white px_20 fs_40px">Click me</button>"`,
-    )
+    expect(classOf(second, 'button')).toBe('fw_semibold h_20 color-palette_blue bd-w_4px c_white px_20 fs_40px')
   })
 
   test('html props', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <styled.div htmlWidth={123} height="123">
         Click me
       </styled.div>,
     )
-    const container = screen.querySelector('div')!
-    expect(container.outerHTML).toMatchInlineSnapshot(`"<div width="123" class="h_123">Click me</div>"`)
+    const container = document.querySelector('div[width]')!
+    expect(container.getAttribute('width')).toBe('123')
+    expect(container.getAttribute('class')).toBe('h_123')
   })
 })
 
-describe('styled factory - button recipe', async () => {
+describe('styled factory - button recipe', () => {
   const Button = styled('button', buttonWithCompoundVariants)
 
   test('base styles', async () => {
-    const { render, screen } = await createDOM()
-    await render(<Button>Click me</Button>)
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--visual_unstyled">Click me</button>"`,
-    )
+    const document = await renderToDocument(<Button>Click me</Button>)
+    expect(classOf(document, 'button')).toBe('button button--visual_unstyled')
   })
 
   test('variant styles', async () => {
-    const { render, screen } = await createDOM()
-    await render(<Button size="sm">Click me</Button>)
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--visual_unstyled button--size_sm">Click me</button>"`,
-    )
+    const document = await renderToDocument(<Button size="sm">Click me</Button>)
+    expect(classOf(document, 'button')).toBe('button button--visual_unstyled button--size_sm')
   })
 
   test('compound variants', async () => {
-    const { render, screen } = await createDOM()
-    await render(<Button visual="solid">Click me</Button>)
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--visual_solid c_blue">Click me</button>"`,
-    )
+    const document = await renderToDocument(<Button visual="solid">Click me</Button>)
+    expect(classOf(document, 'button')).toBe('button button--visual_solid c_blue')
   })
 
   test('custom className', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" size="sm">
         Click me
       </Button>,
     )
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--visual_unstyled button--size_sm custom-btn">Click me</button>"`,
-    )
+    expect(classOf(document, 'button')).toBe('button button--visual_unstyled button--size_sm custom-btn')
   })
 
   test('style prop', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" mx="2">
         Click me
       </Button>,
     )
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--visual_unstyled mx_2 custom-btn">Click me</button>"`,
-    )
+    expect(classOf(document, 'button')).toBe('button button--visual_unstyled mx_2 custom-btn')
   })
 
   test('style prop with variant', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" size="sm" mx="2">
         Click me
       </Button>,
     )
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--visual_unstyled button--size_sm mx_2 custom-btn">Click me</button>"`,
-    )
+    expect(classOf(document, 'button')).toBe('button button--visual_unstyled button--size_sm mx_2 custom-btn')
   })
 
   test('css prop', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
       </Button>,
     )
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--visual_unstyled c_red.100 fs_md custom-btn">Click me</button>"`,
-    )
+    expect(classOf(document, 'button')).toBe('button button--visual_unstyled c_red.100 fs_md custom-btn')
   })
 
   test('css prop with variant', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" size="sm" css={{ color: 'red.100', fontSize: 'md' }}>
         Click me
       </Button>,
     )
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--visual_unstyled button--size_sm c_red.100 fs_md custom-btn">Click me</button>"`,
+    expect(classOf(document, 'button')).toBe(
+      'button button--visual_unstyled button--size_sm c_red.100 fs_md custom-btn',
     )
   })
 
   test('all together', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Button class="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
         Click me
       </Button>,
     )
-
-    const container = screen.querySelector('button')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<button class="button button--visual_outline button--size_md c_red.200 mx_2 fs_xl custom-btn">Click me</button>"`,
+    expect(classOf(document, 'button')).toBe(
+      'button button--visual_outline button--size_md c_red.200 mx_2 fs_xl custom-btn',
     )
   })
 
   test('box pattern', async () => {
-    const { render, screen } = await createDOM()
-    await render(<Box color="red.300">Click me</Box>)
-
-    const container = screen.querySelector('div')!
-    expect(container.outerHTML).toMatchInlineSnapshot(`"<div class="c_red.300">Click me</div>"`)
+    const document = await renderToDocument(<Box color="red.300">Click me</Box>)
+    expect(classOf(document, 'div')).toBe('c_red.300')
   })
 
   test('stack pattern', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <Stack direction="column" color="red.400">
         Click me
       </Stack>,
     )
-
-    const container = screen.querySelector('div')!
-    expect(container.outerHTML).toMatchInlineSnapshot(
-      `"<div class="d_flex flex-d_column gap_8px c_red.400">Click me</div>"`,
-    )
+    expect(classOf(document, 'div')).toBe('d_flex flex-d_column gap_8px c_red.400')
   })
 
   test('array css prop', async () => {
-    const { render, screen } = await createDOM()
-    await render(
+    const document = await renderToDocument(
       <styled.div css={[{ color: 'blue.300', backgroundColor: 'yellow.300' }, { backgroundColor: 'green.300' }]}>
         array css prop
       </styled.div>,
     )
-
-    const container = screen.querySelector('div')!
-    expect(container.outerHTML).toMatchInlineSnapshot(`"<div class="c_blue.300 bg-c_green.300">array css prop</div>"`)
+    expect(classOf(document, 'div')).toBe('c_blue.300 bg-c_green.300')
   })
 })

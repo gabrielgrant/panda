@@ -15,4 +15,27 @@ export default defineConfig({
 
   // The jsx framework to use
   jsxFramework: 'qwik',
+
+  theme: {
+    extend: {
+      slotRecipes: {
+        card: {
+          className: 'card',
+          slots: ['root', 'title', 'body'],
+          base: {
+            root: { padding: '6', borderRadius: 'lg', bg: 'white', color: 'gray.900' },
+            title: { fontWeight: 'bold' },
+            body: { color: 'gray.600' },
+          },
+          variants: {
+            size: {
+              md: { root: { fontSize: 'md' }, title: { fontSize: 'lg' } },
+              lg: { root: { fontSize: 'lg' }, title: { fontSize: '2xl' } },
+            },
+          },
+          defaultVariants: { size: 'md' },
+        },
+      },
+    },
+  },
 })
