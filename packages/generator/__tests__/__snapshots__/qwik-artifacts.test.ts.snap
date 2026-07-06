@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`qwik artifacts > create-style-context 1`] = `
-"import { Slot, component$, createContextId, h, useContext, useContextProvider, useStore } from '@qwik.dev/core'
+"import { Slot, component$, createContextId, jsx, useContext, useContextProvider, useStore } from '@qwik.dev/core'
 import { css, cx, sva } from '../css/index.mjs';
 import { splitProps, normalizeHTMLProps } from '../helpers.mjs';
 import { isCssProperty } from './is-valid-prop.mjs';
@@ -42,7 +42,7 @@ const StyleProvider = component$((props) => {
   store.classNameMap = props.__classNameMap
   useContextProvider(createContextId(__ctx), store)
   const [resolvedClass, forwardedProps] = resolveStyledProps(__styles[__slot], __isConfig, __unstyled, restProps)
-  return h(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, __classNameMap?.[__slot]) }, h(Slot, {}))
+  return jsx(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, __classNameMap?.[__slot]), children: jsx(Slot, {}) })
 })
 
 const StyleRootProvider = component$((props) => {
@@ -51,7 +51,7 @@ const StyleRootProvider = component$((props) => {
   store.styles = props.__styles
   store.classNameMap = props.__classNameMap
   useContextProvider(createContextId(__ctx), store)
-  return h(__cmp, restProps, h(Slot, {}))
+  return jsx(__cmp, { ...restProps, children: jsx(Slot, {}) })
 })
 
 const StyleConsumer = component$((props) => {
@@ -61,7 +61,7 @@ const StyleConsumer = component$((props) => {
   const store = useContext(createContextId(__ctx), styleContextNotFound)
   if (isStyleContextNotFound(store)) throw missingProviderError(__recipeName, __slot)
   const [resolvedClass, forwardedProps] = resolveStyledProps(store.styles[__slot], __isConfig, __unstyled, restProps)
-  return h(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, store.classNameMap?.[__slot]) }, h(Slot, {}))
+  return jsx(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, store.classNameMap?.[__slot]), children: jsx(Slot, {}) })
 })
 
 let anonymousContextCount = 0
@@ -104,7 +104,7 @@ export function createStyleContext(recipe) {
     const WithRootProvider = (props) => {
       const [variantProps, restProps] = svaFn.splitVariantProps(mergeDefaultProps(props, options))
       const slotStyles = getSlotStyles(variantProps)
-      return h(StyleRootProvider, {
+      return jsx(StyleRootProvider, {
         __ctx: contextName,
         __styles: slotStyles,
         __classNameMap: svaFn.classNameMap,
@@ -124,7 +124,7 @@ export function createStyleContext(recipe) {
         if (key in variantProps) restProps[key] = variantProps[key]
       })
       const slotStyles = getSlotStyles(variantProps)
-      return h(StyleProvider, {
+      return jsx(StyleProvider, {
         __ctx: contextName,
         __styles: slotStyles,
         __classNameMap: svaFn.classNameMap,
@@ -143,7 +143,7 @@ export function createStyleContext(recipe) {
     const WithContext = (props) => {
       const { unstyled, ...propsWithDefaults } = mergeDefaultProps(props, options)
       const [forwarded, restProps] = splitForwardedProps(propsWithDefaults, options)
-      return h(StyleConsumer, {
+      return jsx(StyleConsumer, {
         __ctx: contextName,
         __slot: slot,
         __isConfig: isConfigRecipe,
@@ -229,7 +229,7 @@ export declare function createStyleContext<R extends SlotRecipe>(recipe: R): Sty
 `;
 
 exports[`qwik artifacts > jsx factory 1`] = `
-"import { h } from '@qwik.dev/core'
+"import { jsx } from '@qwik.dev/core'
 import { defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName } from './factory-helper.mjs';
 import { isCssProperty } from './is-valid-prop.mjs';
 import { css, cx, cva } from '../css/index.mjs';
@@ -283,12 +283,13 @@ function styledFn(Dynamic, configOrCva = {}, options = {}) {
       return configOrCva.__recipe__ ? recipeClass() : cvaClass()
     }
 
-    return h(Element, {
+    return jsx(Element, {
       ...forwardedProps,
       ...elementProps,
       ...normalizeHTMLProps(htmlProps),
       class: classes(),
-    }, children ?? combinedProps.children)
+      children: children ?? combinedProps.children,
+    })
   }
 
   const name = getDisplayName(__base__)

@@ -15,7 +15,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
     return {
       name: dashName,
       js: outdent`
-      import { h } from '@qwik.dev/core'
+      import { jsx } from '@qwik.dev/core'
       ${jsxStyleProps === 'minimal' ? ctx.file.import('mergeCss', '../css/css') : ''}
       ${ctx.file.import('splitProps', '../helpers')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
@@ -29,9 +29,9 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
           const [patternProps, restProps] = splitProps(props, ${JSON.stringify(props)})
           
           const styleProps = ${styleFnName}(patternProps)
-          const mergedProps = { ref, ...restProps, css: styleProps }
+          const mergedProps = { ...restProps, css: styleProps }
           
-          return h(${factoryName}.${jsxElement}, mergedProps)
+          return jsx(${factoryName}.${jsxElement}, mergedProps)
           `,
           )
           .with(
@@ -43,7 +43,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
           const cssProps = { css: mergeCss(styleProps, props.css) }
           const mergedProps = { ...restProps, ...cssProps }
 
-          return h(${factoryName}.${jsxElement}, mergedProps)
+          return jsx(${factoryName}.${jsxElement}, mergedProps)
           `,
           )
           .with(
@@ -54,7 +54,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
           const styleProps = ${styleFnName}(patternProps)
           const mergedProps = { ...styleProps, ...restProps }
           
-          return h(${factoryName}.${jsxElement}, mergedProps)
+          return jsx(${factoryName}.${jsxElement}, mergedProps)
           `,
           )
           .exhaustive()}

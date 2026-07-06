@@ -68,7 +68,7 @@ export function generateQwikCreateStyleContext(ctx: Context) {
 
   return {
     js: outdent`
-    import { Slot, component$, createContextId, h, useContext, useContextProvider, useStore } from '@qwik.dev/core'
+    import { Slot, component$, createContextId, jsx, useContext, useContextProvider, useStore } from '@qwik.dev/core'
     ${ctx.file.import('css, cx, sva', '../css/index')}
     ${helperImports}
 
@@ -96,7 +96,7 @@ export function generateQwikCreateStyleContext(ctx: Context) {
       store.classNameMap = props.__classNameMap
       useContextProvider(createContextId(__ctx), store)
       const [resolvedClass, forwardedProps] = resolveStyledProps(__styles[__slot], __isConfig, __unstyled, restProps)
-      return h(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, __classNameMap?.[__slot]) }, h(Slot, {}))
+      return jsx(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, __classNameMap?.[__slot]), children: jsx(Slot, {}) })
     })
 
     const StyleRootProvider = component$((props) => {
@@ -105,7 +105,7 @@ export function generateQwikCreateStyleContext(ctx: Context) {
       store.styles = props.__styles
       store.classNameMap = props.__classNameMap
       useContextProvider(createContextId(__ctx), store)
-      return h(__cmp, restProps, h(Slot, {}))
+      return jsx(__cmp, { ...restProps, children: jsx(Slot, {}) })
     })
 
     const StyleConsumer = component$((props) => {
@@ -115,7 +115,7 @@ export function generateQwikCreateStyleContext(ctx: Context) {
       const store = useContext(createContextId(__ctx), styleContextNotFound)
       if (isStyleContextNotFound(store)) throw missingProviderError(__recipeName, __slot)
       const [resolvedClass, forwardedProps] = resolveStyledProps(store.styles[__slot], __isConfig, __unstyled, restProps)
-      return h(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, store.classNameMap?.[__slot]) }, h(Slot, {}))
+      return jsx(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, store.classNameMap?.[__slot]), children: jsx(Slot, {}) })
     })
 
     let anonymousContextCount = 0
@@ -158,7 +158,7 @@ export function generateQwikCreateStyleContext(ctx: Context) {
         const WithRootProvider = (props) => {
           const [variantProps, restProps] = svaFn.splitVariantProps(mergeDefaultProps(props, options))
           const slotStyles = getSlotStyles(variantProps)
-          return h(StyleRootProvider, {
+          return jsx(StyleRootProvider, {
             __ctx: contextName,
             __styles: slotStyles,
             __classNameMap: svaFn.classNameMap,
@@ -178,7 +178,7 @@ export function generateQwikCreateStyleContext(ctx: Context) {
             if (key in variantProps) restProps[key] = variantProps[key]
           })
           const slotStyles = getSlotStyles(variantProps)
-          return h(StyleProvider, {
+          return jsx(StyleProvider, {
             __ctx: contextName,
             __styles: slotStyles,
             __classNameMap: svaFn.classNameMap,
@@ -197,7 +197,7 @@ export function generateQwikCreateStyleContext(ctx: Context) {
         const WithContext = (props) => {
           const { unstyled, ...propsWithDefaults } = mergeDefaultProps(props, options)
           const [forwarded, restProps] = splitForwardedProps(propsWithDefaults, options)
-          return h(StyleConsumer, {
+          return jsx(StyleConsumer, {
             __ctx: contextName,
             __slot: slot,
             __isConfig: isConfigRecipe,

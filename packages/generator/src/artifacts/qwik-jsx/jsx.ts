@@ -6,7 +6,7 @@ export function generateQwikJsxFactory(ctx: Context) {
 
   return {
     js: outdent`
-    import { h } from '@qwik.dev/core'
+    import { jsx } from '@qwik.dev/core'
     ${ctx.file.import(
       'defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName',
       './factory-helper',
@@ -63,12 +63,13 @@ export function generateQwikJsxFactory(ctx: Context) {
           return configOrCva.__recipe__ ? recipeClass() : cvaClass()
         }
 
-        return h(Element, {
+        return jsx(Element, {
           ...forwardedProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
           class: classes(),
-        }, children ?? combinedProps.children)
+          children: children ?? combinedProps.children,
+        })
       }
 
       const name = getDisplayName(__base__)
