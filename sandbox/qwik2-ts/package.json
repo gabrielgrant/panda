@@ -1,6 +1,6 @@
 {
   "name": "sandbox-qwikv2",
-  "description": "Demo App with Routing built-in (recommended)",
+  "description": "Panda sandbox for jsxFramework qwikv2 (Qwik v2 + Qwik Router)",
   "engines": {
     "node": ">=18.0.0"
   },

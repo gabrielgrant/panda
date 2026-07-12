@@ -13,7 +13,7 @@ export declare const ${factoryName}: ${upperName}
 import type { Component, QwikIntrinsicElements } from '@qwik.dev/core'
 ${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
 ${ctx.file.importType(
-  'Assign, DistributiveOmit, DistributiveUnion, JsxStyleProps, PatchedHTMLProps, Pretty',
+  'Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, PatchedHTMLProps, Pretty',
   './system-types',
 )}
 

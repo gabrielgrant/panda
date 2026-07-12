@@ -118,6 +118,9 @@ export function generateQwikV2CreateStyleContext(ctx: Context) {
       return jsx(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, store.classNameMap?.[__slot]), children: jsx(Slot, {}) })
     })
 
+    // ad-hoc sva() recipes have no name to derive a context id from; the counter
+    // only needs to be unique per module evaluation, since the id reaches the
+    // provider and its consumers through the same createStyleContext closure
     let anonymousContextCount = 0
 
     export function createStyleContext(recipe) {

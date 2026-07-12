@@ -10,7 +10,7 @@ ${ctx.file.importType(upperName, '../types/jsx')}
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
-import type { Component, QwikIntrinsicElements } from '@qwik.dev/core'
+import type { Component, JSXOutput, QwikIntrinsicElements } from '@qwik.dev/core'
 
 export type ElementType = keyof QwikIntrinsicElements | Component<any>
 
@@ -32,7 +32,7 @@ export interface AsProps {
 }
 
 export type ${componentName}<T extends ElementType> = {
-  (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T> & AsProps) => JSX.Element
+  (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T> & AsProps) => JSXOutput
 }
 
 export interface JsxFactory {

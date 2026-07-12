@@ -110,8 +110,8 @@ const options: TestUserConfig = {
   },
   qwik: {
     test: {
-      include: ['**/__tests__/**/frameworks/qwik.[!v]*.{test,spec}.{j,t}s?(x)'],
-      typecheck: { enabled: typecheck, include: ['**/__tests__/**/frameworks/qwik.[!v]*.{test,spec}.{j,t}s?(x)'] },
+      include: ['**/__tests__/**/frameworks/qwik.*.{test,spec}.{j,t}s?(x)'],
+      typecheck: { enabled: typecheck, include: ['**/__tests__/**/frameworks/qwik.*.{test,spec}.{j,t}s?(x)'] },
       environment: 'node',
     },
   },

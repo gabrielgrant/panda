@@ -64,6 +64,9 @@ const StyleConsumer = component$((props) => {
   return jsx(asElement ?? __cmp, { ...__fwd, ...forwardedProps, class: cx(resolvedClass, store.classNameMap?.[__slot]), children: jsx(Slot, {}) })
 })
 
+// ad-hoc sva() recipes have no name to derive a context id from; the counter
+// only needs to be unique per module evaluation, since the id reaches the
+// provider and its consumers through the same createStyleContext closure
 let anonymousContextCount = 0
 
 export function createStyleContext(recipe) {
@@ -326,7 +329,7 @@ exports[`qwikv2 artifacts > jsx types 1`] = `
 "/* eslint-disable */
 import type { Component, QwikIntrinsicElements } from '@qwik.dev/core'
 import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe';
-import type { Assign, DistributiveOmit, DistributiveUnion, JsxStyleProps, PatchedHTMLProps, Pretty } from './system-types';
+import type { Assign, DistributiveOmit, DistributiveUnion, JsxHTMLProps, JsxStyleProps, PatchedHTMLProps, Pretty } from './system-types';
 
 export type ElementType = keyof QwikIntrinsicElements | Component<any>
 

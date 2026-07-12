@@ -1,8 +1,7 @@
 import { component$, useSignal } from '@qwik.dev/core'
 import type { DocumentHead } from '@qwik.dev/router'
 import { css } from 'styled-system/css'
-import { Stack, styled } from 'styled-system/jsx'
-import { createStyleContext } from 'styled-system/jsx'
+import { Stack, createStyleContext, styled } from 'styled-system/jsx'
 import { card } from 'styled-system/recipes'
 
 const { withProvider, withContext } = createStyleContext(card)
