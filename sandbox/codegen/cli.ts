@@ -7,6 +7,7 @@ const cli = cac('sct')
 const scenarioList = [
   'preact',
   'qwik',
+  'qwikv2',
   'react',
   'solid',
   'vue',

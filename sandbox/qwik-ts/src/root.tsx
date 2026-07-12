@@ -1,26 +1,28 @@
-import { component$ } from '@qwik.dev/core'
-import { QwikRouterProvider, RouterOutlet } from '@qwik.dev/router'
+import { component$ } from '@builder.io/qwik';
+import { QwikCityProvider, RouterOutlet, ServiceWorkerRegister } from '@builder.io/qwik-city';
+import { RouterHead } from './components/head';
 
-import './global.css'
+import './global.css';
 
 export default component$(() => {
   /**
-   * The root of a QwikRouter site always start with the <QwikRouterProvider> component,
+   * The root of a QwikCity site always start with the <QwikCityProvider> component,
    * immediately followed by the document's <head> and <body>.
    *
    * Dont remove the `<head>` and `<body>` elements.
    */
 
   return (
-    <QwikRouterProvider>
+    <QwikCityProvider>
       <head>
-        <meta charset="utf-8" />
+        <meta charSet="utf-8" />
         <link rel="manifest" href="/manifest.json" />
-        <title>Panda + Qwik</title>
+        <RouterHead />
       </head>
       <body lang="en">
         <RouterOutlet />
+        <ServiceWorkerRegister />
       </body>
-    </QwikRouterProvider>
-  )
-})
+    </QwikCityProvider>
+  );
+});

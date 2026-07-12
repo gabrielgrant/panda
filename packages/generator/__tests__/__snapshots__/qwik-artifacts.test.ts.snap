@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`qwik artifacts > create-style-context 1`] = `
+exports[`qwikv2 artifacts > create-style-context 1`] = `
 "import { Slot, component$, createContextId, jsx, useContext, useContextProvider, useStore } from '@qwik.dev/core'
 import { css, cx, sva } from '../css/index.mjs';
 import { splitProps, normalizeHTMLProps } from '../helpers.mjs';
@@ -165,7 +165,7 @@ export function createStyleContext(recipe) {
 }"
 `;
 
-exports[`qwik artifacts > create-style-context 2`] = `
+exports[`qwikv2 artifacts > create-style-context 2`] = `
 "/* eslint-disable */
 import type { SlotRecipeRuntimeFn, RecipeVariantProps } from '../types/recipe';
 import type { JsxHTMLProps, JsxStyleProps, Assign } from '../types/system-types';
@@ -228,7 +228,7 @@ export interface StyleContext<R extends SlotRecipe> {
 export declare function createStyleContext<R extends SlotRecipe>(recipe: R): StyleContext<R>"
 `;
 
-exports[`qwik artifacts > jsx factory 1`] = `
+exports[`qwikv2 artifacts > jsx factory 1`] = `
 "import { jsx } from '@qwik.dev/core'
 import { defaultShouldForwardProp, composeShouldForwardProps, composeCvaFn, getDisplayName } from './factory-helper.mjs';
 import { isCssProperty } from './is-valid-prop.mjs';
@@ -322,7 +322,7 @@ export const styled = /* @__PURE__ */ createJsxFactory()
 "
 `;
 
-exports[`qwik artifacts > jsx types 1`] = `
+exports[`qwikv2 artifacts > jsx types 1`] = `
 "/* eslint-disable */
 import type { Component, QwikIntrinsicElements } from '@qwik.dev/core'
 import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe';

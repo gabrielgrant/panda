@@ -1,0 +1,32 @@
+{
+  "name": "sandbox-qwikv2",
+  "description": "Demo App with Routing built-in (recommended)",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare": "panda codegen",
+    "build": "qwik build",
+    "build.client": "vite build",
+    "build.preview": "vite build --ssr src/entry.preview.tsx",
+    "build.types": "tsc --incremental --noEmit",
+    "dev": "vite --mode ssr",
+    "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
+    "fmt": "prettier --write .",
+    "fmt.check": "prettier --check .",
+    "preview": "qwik build preview && vite preview --open",
+    "start": "vite --open --mode ssr",
+    "qwik": "qwik"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*",
+    "@qwik.dev/core": "2.0.0-beta.36",
+    "@qwik.dev/router": "2.0.0-beta.36",
+    "typescript": "6.0.2",
+    "undici": "7.7.0",
+    "vite": "7.2.6",
+    "vite-tsconfig-paths": "5.1.4"
+  }
+}

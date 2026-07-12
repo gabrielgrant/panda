@@ -10,7 +10,7 @@ ${ctx.file.importType(upperName, '../types/jsx')}
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
-import type { Component, QwikIntrinsicElements } from '@qwik.dev/core'
+import type { Component, QwikIntrinsicElements } from '@builder.io/qwik'
 
 export type ElementType = keyof QwikIntrinsicElements | Component<any>
 

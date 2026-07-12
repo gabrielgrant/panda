@@ -2,8 +2,8 @@
 import { Slot, component$, type PropsOf } from '@qwik.dev/core'
 import { ssrRenderToDom } from '@qwik.dev/core/testing'
 import { describe, expect, test } from 'vitest'
-import { createStyleContext } from '../../styled-system-qwik/jsx'
-import { slotButton } from '../../styled-system-qwik/recipes'
+import { createStyleContext } from '../../styled-system-qwikv2/jsx'
+import { slotButton } from '../../styled-system-qwikv2/recipes'
 
 const { withProvider, withContext, withRootProvider } = createStyleContext(slotButton)
 

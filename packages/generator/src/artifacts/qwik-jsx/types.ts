@@ -10,7 +10,7 @@ ${ctx.file.importType(upperName, '../types/jsx')}
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
-import type { Component, QwikIntrinsicElements } from '@qwik.dev/core'
+import type { Component, QwikIntrinsicElements } from '@builder.io/qwik'
 ${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
 ${ctx.file.importType(
   'Assign, DistributiveOmit, DistributiveUnion, JsxStyleProps, PatchedHTMLProps, Pretty',

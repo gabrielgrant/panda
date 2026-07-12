@@ -15,7 +15,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
     return {
       name: dashName,
       js: outdent`
-      import { jsx } from '@qwik.dev/core'
+      import { h } from '@builder.io/qwik'
       ${jsxStyleProps === 'minimal' ? ctx.file.import('mergeCss', '../css/css') : ''}
       ${ctx.file.import('splitProps', '../helpers')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
@@ -31,7 +31,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
           const styleProps = ${styleFnName}(patternProps)
           const mergedProps = { ...restProps, css: styleProps }
           
-          return jsx(${factoryName}.${jsxElement}, mergedProps)
+          return h(${factoryName}.${jsxElement}, mergedProps)
           `,
           )
           .with(
@@ -43,7 +43,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
           const cssProps = { css: mergeCss(styleProps, props.css) }
           const mergedProps = { ...restProps, ...cssProps }
 
-          return jsx(${factoryName}.${jsxElement}, mergedProps)
+          return h(${factoryName}.${jsxElement}, mergedProps)
           `,
           )
           .with(
@@ -54,7 +54,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
           const styleProps = ${styleFnName}(patternProps)
           const mergedProps = { ...styleProps, ...restProps }
           
-          return jsx(${factoryName}.${jsxElement}, mergedProps)
+          return h(${factoryName}.${jsxElement}, mergedProps)
           `,
           )
           .exhaustive()}
@@ -62,7 +62,7 @@ export function generateQwikJsxPattern(ctx: Context, filters?: ArtifactFilters) 
       `,
 
       dts: outdent`
-      import type { Component } from '@qwik.dev/core'
+      import type { Component } from '@builder.io/qwik'
       ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
       ${ctx.file.importType(typeName, '../types/jsx')}
       ${ctx.file.importType('Assign, DistributiveOmit', '../types/system-types')}

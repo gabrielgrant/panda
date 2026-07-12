@@ -2,7 +2,7 @@ import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 
-export function generateQwikCreateStyleContext(ctx: Context) {
+export function generateQwikV2CreateStyleContext(ctx: Context) {
   const jsxStyleProps = ctx.config.jsxStyleProps ?? 'all'
 
   const splitAndResolve = match(jsxStyleProps)

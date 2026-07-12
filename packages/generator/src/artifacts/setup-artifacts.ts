@@ -341,7 +341,7 @@ function setupJsxCreateStyleContext(ctx: Context): Artifact | undefined {
 }
 
 function styleContextFileName(ctx: Context) {
-  return ctx.jsx.framework === 'qwik' ? 'create-style-context.qwik' : 'create-style-context'
+  return ctx.jsx.framework === 'qwikv2' ? 'create-style-context.qwik' : 'create-style-context'
 }
 
 function setupJsxPatternsIndex(ctx: Context): Artifact | undefined {
@@ -349,7 +349,7 @@ function setupJsxPatternsIndex(ctx: Context): Artifact | undefined {
 
   const isStyleProp = !ctx.isTemplateLiteralSyntax
   const patternNames = ctx.patterns.details.map((pattern) => pattern.dashName)
-  const styleContextExclude = ['svelte']
+  const styleContextExclude = ['qwik', 'svelte']
 
   const index = {
     js: outdent`

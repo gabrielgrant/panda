@@ -8,12 +8,15 @@ import {
 } from './preact-jsx'
 import { generatePreactJsxStringLiteralFactory } from './preact-jsx/jsx.string-literal'
 import { generatePreactJsxStringLiteralTypes } from './preact-jsx/types.string-literal'
+import { generateQwikJsxFactory, generateQwikJsxPattern, generateQwikJsxTypes } from './qwik-jsx'
 import {
-  generateQwikJsxFactory,
-  generateQwikJsxPattern,
-  generateQwikJsxTypes,
-  generateQwikCreateStyleContext,
-} from './qwik-jsx'
+  generateQwikV2JsxFactory,
+  generateQwikV2JsxPattern,
+  generateQwikV2JsxTypes,
+  generateQwikV2CreateStyleContext,
+} from './qwik2-jsx'
+import { generateQwikV2JsxStringLiteralFactory } from './qwik2-jsx/jsx.string-literal'
+import { generateQwikV2JsxStringLiteralTypes } from './qwik2-jsx/types.string-literal'
 import { generateQwikJsxStringLiteralFactory } from './qwik-jsx/jsx.string-literal'
 import { generateQwikJsxStringLiteralTypes } from './qwik-jsx/types.string-literal'
 import {
@@ -51,12 +54,14 @@ const typesMap = {
   solid: generateSolidJsxTypes,
   vue: generateVueJsxTypes,
   qwik: generateQwikJsxTypes,
+  qwikv2: generateQwikV2JsxTypes,
 }
 
 const typesStringLiteralMap = {
   react: generateReactJsxStringLiteralTypes,
   solid: generateSolidJsxStringLiteralTypes,
   qwik: generateQwikJsxStringLiteralTypes,
+  qwikv2: generateQwikV2JsxStringLiteralTypes,
   preact: generatePreactJsxStringLiteralTypes,
   vue: generateVueJsxStringLiteralTypes,
 }
@@ -80,12 +85,14 @@ const factoryMap = {
   preact: generatePreactJsxFactory,
   vue: generateVueJsxFactory,
   qwik: generateQwikJsxFactory,
+  qwikv2: generateQwikV2JsxFactory,
 }
 
 const factoryStringLiteralMap = {
   react: generateReactJsxStringLiteralFactory,
   solid: generateSolidJsxStringLiteralFactory,
   qwik: generateQwikJsxStringLiteralFactory,
+  qwikv2: generateQwikV2JsxStringLiteralFactory,
   preact: generatePreactJsxStringLiteralFactory,
   vue: generateVueJsxStringLiteralFactory,
 }
@@ -109,6 +116,7 @@ const patternMap = {
   preact: generatePreactJsxPattern,
   vue: generateVueJsxPattern,
   qwik: generateQwikJsxPattern,
+  qwikv2: generateQwikV2JsxPattern,
 }
 
 export function generateJsxPatterns(ctx: Context, filters?: ArtifactFilters) {
@@ -126,7 +134,7 @@ const createStyleContextMap = {
   preact: generatePreactCreateStyleContext,
   solid: generateSolidCreateStyleContext,
   vue: generateVueCreateStyleContext,
-  qwik: generateQwikCreateStyleContext,
+  qwikv2: generateQwikV2CreateStyleContext,
 }
 
 export function generateJsxCreateStyleContext(ctx: Context) {

@@ -44,6 +44,7 @@ export const interactive = async () => {
                 { value: 'vue', label: 'Vue' },
                 { value: 'solid', label: 'Solid' },
                 { value: 'qwik', label: 'Qwik' },
+                { value: 'qwikv2', label: 'Qwik v2 (beta)' },
               ],
             }),
         }),

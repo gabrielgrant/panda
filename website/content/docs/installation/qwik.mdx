@@ -5,140 +5,116 @@ description: Easily use Panda with Qwik with our dedicated integration.
 
 Learn how to set up Panda CSS in a Qwik project using PostCSS.
 
-> This guide targets Qwik v2 (`@qwik.dev/core`). Panda generates Qwik artifacts that import from `@qwik.dev/core`, so
-> Qwik v1 (`@builder.io/qwik`) projects are not supported by the generated `jsx` artifacts. If you are still on Qwik
-> v1, either stay on an older Panda version or avoid `jsxFramework: 'qwik'` and use the plain `css`/`recipes`
-> functions, which are framework-agnostic.
-
 ## Start a new project
 
 <Steps>
 
 ### Create Qwik project
 
-To get started, we will need to create a new Qwik project. Pick the Qwik v2 (beta) starter.
+To get started, we will need to create a new Qwik project using `typescript` template.
 
 <Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
   <Tab>
     ```bash
-    npm create qwik@beta
+    npm create qwik@latest
     ```
   </Tab>
   <Tab>
     ```bash
-    pnpm create qwik@beta
+    pnpm create qwik@latest
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn create qwik@beta
+    yarn create qwik
     ```
   </Tab>
   <Tab>
     ```bash
-    bun create qwik@beta
+    bun create qwik@latest
     ```
   </Tab>
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
-### Install Panda
+### Install and Configure Panda
 
-Install panda and create your `panda.config.ts` file.
+Qwik provies an official script that installs panda and configures it for you.
 
 <Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
   <Tab>
     ```bash
-    npm install -D @pandacss/dev
-    npx panda init --postcss
+    npm run qwik add pandacss
     ```
   </Tab>
   <Tab>
     ```bash
-    pnpm install -D @pandacss/dev
-    pnpm panda init --postcss
+    pnpm qwik add pandacss
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn add -D @pandacss/dev
-    yarn panda init --postcss
+    yarn qwik add pandacss
     ```
   </Tab>
   <Tab>
     ```bash
-    bun add -D @pandacss/dev
-    bun panda init --postcss
+    bun qwik add pandacss
     ```
   </Tab>
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
-### Update package.json scripts
+## Start your build process
 
-Open your `package.json` file and update the `scripts` section as follows:
+Run the following command to start your development server.
 
-```diff {3} filename="package.json"
-{
-  "scripts": {
-+    "prepare": "panda codegen",
-    "dev": "vite --mode ssr",
-    "build": "qwik build"
-  }
-}
-```
-
-- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about
-  [codegen](/docs/references/cli#panda-codegen) in the CLI section.
-
-### Configure the content
-
-Make sure that all of the paths of your Qwik components are included in the `include` section of the `panda.config.ts`
-file, and set `jsxFramework` to `qwik` to generate the `styled` factory, JSX patterns and `createStyleContext`.
-
-```js {8, 11} filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  // Whether to use css reset
-  preflight: true,
-
-  // Where to look for your css declarations
-  include: ['./src/**/*.{js,jsx,ts,tsx}'],
-
-  // Generates JSX utilities for Qwik
-  jsxFramework: 'qwik',
-
-  // The output directory for your css system
-  outdir: 'styled-system'
-})
-```
-
-### Configure the entry CSS with layers
-
-Add this code to the top of the `src/global.css` file (imported in `src/root.tsx`).
-
-```css filename="src/global.css"
-@layer reset, base, tokens, recipes, utilities;
-```
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun dev
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
 
 ### Start using Panda
 
 Now you can start using Panda CSS in your project.
 
-```tsx filename="src/routes/index.tsx"
-import { component$ } from '@qwik.dev/core'
+```tsx filename="src/routes/layout.tsx"
+import { component$, Slot } from '@builder.io/qwik'
+import { routeLoader$ } from '@builder.io/qwik-city'
 import { css } from 'styled-system/css'
-import { styled } from 'styled-system/jsx'
+
+export const useServerTimeLoader = routeLoader$(() => {
+  return {
+    date: new Date().toISOString()
+  }
+})
 
 export default component$(() => {
   return (
     <div class={css({ p: '10', bg: 'gray.900', h: 'dvh' })}>
-      <styled.button bg="blue.500" onClick$={() => console.log('clicked')}>
-        Click me
-      </styled.button>
+      <Slot />
     </div>
   )
 })
@@ -158,6 +134,31 @@ If you're not getting import autocomplete in your IDE, you may need to include t
 }
 ```
 
-While Qwik v2 is in beta, production builds require a Rollup-based Vite (Vite 7). Vite 8 (Rolldown) builds currently
-produce a client manifest that Qwik's SSR renderer cannot resolve event handlers from; this is a Qwik limitation, not a
-Panda one.
+## Using Qwik v2 (beta)
+
+Qwik v2 renamed the framework package from `@builder.io/qwik` to `@qwik.dev/core`, so the artifacts generated by
+`jsxFramework: 'qwik'` (which target Qwik v1) cannot be used in a Qwik v2 app. Panda ships a separate target for it:
+
+```js {3} filename="panda.config.ts"
+export default defineConfig({
+  // ...
+  jsxFramework: 'qwikv2'
+})
+```
+
+With `jsxFramework: 'qwikv2'`:
+
+- All generated `jsx` artifacts import from `@qwik.dev/core` and use the `jsx()` runtime entry.
+- `createStyleContext` is generated (it is not available for Qwik v1). It matches the React API (`withRootProvider`,
+  `withProvider`, `withContext`, `unstyled`, `defaultProps` including JSX children) and works over SSR plus resume.
+  The wrapped component must be a tag name or a `component$`.
+- The file is emitted as `create-style-context.qwik.mjs` because the Qwik optimizer only processes
+  `.jsx`/`.ts`/`.tsx` and `*.qwik.[mc]js` sources.
+
+To scaffold a Qwik v2 project use the beta starter (`npm create qwik@beta`), install Panda manually with
+`panda init --postcss` (the `qwik add pandacss` integration targets v1), add the `@layer` declaration to
+`src/global.css`, and set `jsxFramework: 'qwikv2'` in your config.
+
+> While Qwik v2 is in beta, production builds require a Rollup-based Vite (Vite 7). Vite 8 (Rolldown) builds
+> currently produce a client manifest that Qwik's SSR renderer cannot resolve event handlers from; this is a Qwik
+> limitation, not a Panda one.
