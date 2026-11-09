@@ -280,20 +280,10 @@ conditions: {
 }
 ```
 
-### Qwik JSX is removed
+### Qwik JSX targets Qwik 2
 
-`jsxFramework: 'qwik'` no longer generates `styled`, `Box`, or pattern components. Drop the option and style with
-`css()`, `cva()`, and pattern functions; Qwik's `class` accepts their output directly.
-
-```tsx
-// ❌ v1
-import { Box } from 'styled-system/jsx'
-;<Box color="red.500" />
-
-// ✅ v2
-import { css } from 'styled-system/css'
-;<div class={css({ color: 'red.500' })} />
-```
+`jsxFramework: 'qwik'` now generates code for Qwik 2 (`@qwik.dev/core`). On Qwik 1 (`@builder.io/qwik`), drop the option
+and style with `css()`, `cva()`, and pattern functions, since Qwik's `class` accepts their output directly.
 
 ### CLI commands and flags
 

@@ -3,7 +3,7 @@ title: Using Qwik
 description: Easily use Panda with Qwik with our dedicated integration.
 ---
 
-Learn how to set up Panda CSS in a Qwik project using the `@pandacss/vite` plugin.
+Learn how to set up Panda CSS in a Qwik 2 project (`@qwik.dev/core`) using the `@pandacss/vite` plugin.
 
 Prefer PostCSS? Run `panda init --postcss` instead of the plugin step below and follow
 [Using PostCSS](/docs/get-started/postcss). Everything else on this page stays the same.
@@ -14,28 +14,28 @@ Prefer PostCSS? Run `panda init --postcss` instead of the plugin step below and 
 
 ### Create Qwik project
 
-To get started, we will need to create a new Qwik project using `typescript` template.
+To get started, we will need to create a new Qwik 2 project using `typescript` template.
 
 <Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
   <Tab>
     ```bash
-    npm create qwik@latest
+    npm create qwik@rc
     ```
   </Tab>
   <Tab>
     ```bash
-    pnpm create qwik@latest
+    pnpm create qwik@rc
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn create qwik
+    yarn create qwik@rc
     ```
   </Tab>
   <Tab>
     ```bash
-    bun create qwik@latest
+    bun create qwik@rc
     ```
   </Tab>
   {/* <!-- prettier-ignore-end --> */}
@@ -85,12 +85,12 @@ to date on save. No separate watcher needed.
 ```ts {2,8} filename="vite.config.ts"
 import { defineConfig } from 'vite'
 import pandacss from '@pandacss/vite'
-import { qwikVite } from '@builder.io/qwik/optimizer'
-import { qwikCity } from '@builder.io/qwik-city/vite'
+import { qwikVite } from '@qwik.dev/core/optimizer'
+import { qwikRouter } from '@qwik.dev/router/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
-  plugins: [pandacss(), qwikCity(), qwikVite(), tsconfigPaths()]
+  plugins: [pandacss(), qwikRouter(), qwikVite(), tsconfigPaths()]
 })
 ```
 
@@ -114,18 +114,22 @@ The plugin only runs with Vite. The `"prepare"` script covers type checking and 
 
 ### Configure the content
 
-Make sure your component paths are in `include`:
+Set `jsxFramework: 'qwik'` and make sure your component paths are in `include`:
 
-```js {6} filename="panda.config.ts"
+```js {6,7} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   include: ['./src/**/*.{js,jsx,ts,tsx}'],
+  jsxFramework: 'qwik',
   outdir: 'styled-system'
 })
 ```
+
+`jsxFramework: 'qwik'` generates `styled`, the pattern components, `createRecipeContext`, and
+`createSlotRecipeContext` in `styled-system/jsx`. They target Qwik 2 and render with `class`.
 
 ### Configure CSS layers
 
@@ -171,8 +175,8 @@ Run the following command to start your development server.
 Now you can start using Panda CSS in your project.
 
 ```tsx filename="src/routes/layout.tsx"
-import { component$, Slot } from '@builder.io/qwik'
-import { routeLoader$ } from '@builder.io/qwik-city'
+import { component$, Slot } from '@qwik.dev/core'
+import { routeLoader$ } from '@qwik.dev/router'
 import { css } from 'styled-system/css'
 
 export const useServerTimeLoader = routeLoader$(() => {
@@ -190,13 +194,45 @@ export default component$(() => {
 })
 ```
 
+### Use the JSX helpers
+
+Style props, recipes, and Qwik props such as `onClick$` all go through `styled`:
+
+```tsx filename="src/routes/index.tsx"
+import { component$, useSignal } from '@qwik.dev/core'
+import { createSlotRecipeContext, styled } from 'styled-system/jsx'
+import { card } from 'styled-system/recipes'
+
+const { withProvider, withContext } = createSlotRecipeContext(card)
+const Card = withProvider('article', 'root')
+const CardTitle = withContext('h2', 'title')
+
+export default component$(() => {
+  const count = useSignal(0)
+  return (
+    <Card size={count.value % 2 ? 'lg' : 'md'}>
+      <CardTitle>Clicked {count.value} times</CardTitle>
+      <styled.button px="4" bg="blue.500" onClick$={() => count.value++}>
+        Click
+      </styled.button>
+    </Card>
+  )
+})
+```
+
+Qwik serializes component props, so recipe contexts have a few rules:
+
+- Call `createRecipeContext`, `createSlotRecipeContext`, and their `with*` helpers at module scope.
+- Wrap tag names or `component$` components. Plain function components can't be serialized.
+- Keep `defaultProps` serializable.
+
 ### Optional: drop the styling runtime
 
 By default `css()` resolves class strings in the browser with a small runtime. Turn on source transforms and the
 plugin rewrites static calls to plain class strings at build time, so the runtime never ships:
 
 ```ts filename="vite.config.ts"
-plugins: [pandacss({ transform: true }), qwikCity(), qwikVite(), tsconfigPaths()]
+plugins: [pandacss({ transform: true }), qwikRouter(), qwikVite(), tsconfigPaths()]
 ```
 
 Dynamic values keep their runtime form. See [Source transforms](/docs/styling/source-transforms).
