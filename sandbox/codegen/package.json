@@ -24,7 +24,7 @@
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",
     "@preact/preset-vite": "2.10.6",
-    "@qwik.dev/core": "2.0.0-rc.4",
+    "@qwik.dev/core": "2.0.0-rc.5",
     "@solidjs/testing-library": "0.8.10",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/preact": "3.2.4",

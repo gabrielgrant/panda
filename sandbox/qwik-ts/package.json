@@ -6,7 +6,7 @@
   },
   "private": true,
   "scripts": {
-    "codegen": "panda codegen",
+    "codegen": "panda codegen && panda codegen --config panda.minimal.config.ts && panda codegen --config panda.none.config.ts",
     "cssgen": "panda cssgen",
     "build": "pnpm codegen && qwik build",
     "build.client": "vite build",
@@ -15,15 +15,15 @@
     "dev": "pnpm codegen && vite --mode ssr",
     "preview": "qwik build preview && vite preview --open",
     "qwik": "qwik",
-    "e2e": "node e2e.mjs"
+    "e2e": "pnpm codegen && node e2e.mjs"
   },
   "devDependencies": {
     "@pandacss/cli": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",
-    "@qwik.dev/core": "2.0.0-rc.4",
-    "@qwik.dev/router": "2.0.0-rc.4",
+    "@qwik.dev/core": "2.0.0-rc.5",
+    "@qwik.dev/router": "2.0.0-rc.5",
     "playwright-core": "1.65.0",
     "typescript": "6.0.3",
     "undici": "7.29.0",

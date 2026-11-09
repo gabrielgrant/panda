@@ -1,4 +1,4 @@
-import { component$, useSignal } from '@qwik.dev/core'
+import { component$, useSignal, type PropsOf } from '@qwik.dev/core'
 import type { DocumentHead } from '@qwik.dev/router'
 import { css } from 'styled-system/css'
 import { Stack, createRecipeContext, createSlotRecipeContext, styled } from 'styled-system/jsx'
@@ -9,8 +9,34 @@ const Card = cardContext.withProvider('article', 'root')
 const CardTitle = cardContext.withContext('h2', 'title')
 const CardBody = cardContext.withContext('p', 'body')
 
+// Plain function components and defaults Qwik can't serialize.
+const Note = (props: PropsOf<'aside'>) => <aside {...props} />
+const CardNote = cardContext.withContext(Note, 'body')
+const Glyph = () => <i data-testid="glyph">*</i>
+const CardGlyph = cardContext.withContext('span', 'title', { defaultProps: { children: <Glyph /> } })
+
 const badgeContext = createRecipeContext(badge)
 const Badge = badgeContext.withContext('span')
+const Tag = badgeContext.withContext('span', { shouldForwardProp: (prop) => prop === 'color' })
+
+// These parts sit under a PropsProvider but render in a component that doesn't re-render
+// when the provided value changes.
+const ProvidedCard = component$(() => (
+  <Card id="provided-card">
+    <CardTitle>PropsProvider card</CardTitle>
+    <CardNote id="note">Note</CardNote>
+    <CardGlyph id="glyph" />
+  </Card>
+))
+
+const ProvidedBadges = component$(() => (
+  <>
+    <Badge id="badge">Badge</Badge>
+    <Tag id="tag" color="tomato">
+      Tag
+    </Tag>
+  </>
+))
 
 export default component$(() => {
   const count = useSignal(0)
@@ -41,13 +67,11 @@ export default component$(() => {
       </Card>
 
       <cardContext.PropsProvider value={{ size }}>
-        <Card id="provided-card">
-          <CardTitle>PropsProvider card</CardTitle>
-        </Card>
+        <ProvidedCard />
       </cardContext.PropsProvider>
 
       <badgeContext.PropsProvider value={{ tone: count.value % 2 === 0 ? 'info' : 'danger' }}>
-        <Badge id="badge">Badge</Badge>
+        <ProvidedBadges />
       </badgeContext.PropsProvider>
 
       <styled.button id="orphan" textDecoration="underline" onClick$={() => (showOrphan.value = true)}>

@@ -1,7 +1,7 @@
 /** @jsxImportSource @qwik.dev/core */
 import { Slot, component$, type JSXOutput, type PropsOf } from '@qwik.dev/core'
 import { ssrRenderToDom } from '@qwik.dev/core/testing'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { sva } from '../../styled-system-qwik/css'
 import { createRecipeContext, createSlotRecipeContext } from '../../styled-system-qwik/jsx'
 import { buttonWithCompoundVariants, slotButton } from '../../styled-system-qwik/recipes'
@@ -132,9 +132,75 @@ describe('slot recipe context - qwik', () => {
   })
 })
 
+describe('slot recipe context parts and options', () => {
+  test('wraps plain function components', async () => {
+    const Emphasis = (props: PropsOf<'em'>) => <em {...props} />
+    const Part = withContext(Emphasis, 'icon')
+
+    const document = await render(
+      <Root visual="solid">
+        <Part data-testid="part">Inline</Part>
+      </Root>,
+    )
+    const part = document.querySelector('[data-testid=part]')!
+
+    expect(part.tagName).toBe('EM')
+    expect(part.className).toBe('slot-button__icon slot-button__icon--visual_solid')
+    expect(part.textContent).toBe('Inline')
+  })
+
+  test('defaultProps can hold values Qwik cannot serialize', async () => {
+    const Glyph = () => <svg data-testid="glyph" />
+    const IconWithGlyph = withContext('span', 'icon', { defaultProps: { children: <Glyph /> } })
+
+    const document = await render(
+      <Root>
+        <IconWithGlyph />
+      </Root>,
+    )
+
+    expect(document.querySelector('[data-slot=icon] [data-testid=glyph]')).toBeTruthy()
+  })
+
+  test('shouldForwardProp applies to context parts', async () => {
+    const Swatch = withContext('span', 'icon', { shouldForwardProp: (prop) => prop === 'color' })
+    const swatch = (
+      await render(
+        <Root>
+          <Swatch color="red" bg="blue.500" />
+        </Root>,
+      )
+    ).querySelector('[data-slot=icon]')!
+
+    expect(swatch.getAttribute('color')).toBe('red')
+    expect(swatch.className).toBe('bg_blue.500 slot-button__icon slot-button__icon--visual_unstyled')
+  })
+
+  test('each id gets its own context', async () => {
+    const menu = createSlotRecipeContext(slotButton, { id: 'menu' })
+    const MenuLabel = menu.withContext('span', 'root')
+
+    await expect(
+      render(
+        <Root>
+          <MenuLabel>Menu</MenuLabel>
+        </Root>,
+      ),
+    ).rejects.toThrow('cannot access createSlotRecipeContext("slotButton") because it\'s missing its Provider.')
+  })
+
+  test('a second context for the same recipe without an id warns', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    createSlotRecipeContext(slotButton)
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('createSlotRecipeContext("slotButton") was called twice'))
+    warn.mockRestore()
+  })
+})
+
 describe('slot recipe context PropsProvider', () => {
   test('PropsProvider sets variants and props on withProvider', async () => {
-    const { withProvider, withContext, PropsProvider } = createSlotRecipeContext(slotButton)
+    const { withProvider, withContext, PropsProvider } = createSlotRecipeContext(slotButton, { id: 'props-a' })
     const ButtonRoot = withProvider('div', 'root')
     const ButtonLabel = withContext('span', 'root')
 
@@ -152,7 +218,7 @@ describe('slot recipe context PropsProvider', () => {
   })
 
   test('passed props override PropsProvider', async () => {
-    const { withProvider, PropsProvider } = createSlotRecipeContext(slotButton)
+    const { withProvider, PropsProvider } = createSlotRecipeContext(slotButton, { id: 'props-b' })
     const ButtonRoot = withProvider('div', 'root')
 
     const document = await render(
@@ -165,7 +231,7 @@ describe('slot recipe context PropsProvider', () => {
   })
 
   test('PropsProvider sets variants on withRootProvider', async () => {
-    const { withRootProvider, withContext, PropsProvider } = createSlotRecipeContext(slotButton)
+    const { withRootProvider, withContext, PropsProvider } = createSlotRecipeContext(slotButton, { id: 'props-c' })
     const ButtonRoot = withRootProvider('div')
     const ButtonLabel = withContext('span', 'root')
 

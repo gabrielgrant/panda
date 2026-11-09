@@ -1077,8 +1077,8 @@ importers:
         specifier: 2.10.6
         version: 2.10.6(@babel/core@7.29.7(supports-color@10.2.2))(preact@10.29.8)(rollup@4.63.1)(supports-color@10.2.2)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))
       '@qwik.dev/core':
-        specifier: 2.0.0-rc.4
-        version: 2.0.0-rc.4(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2))
+        specifier: 2.0.0-rc.5
+        version: 2.0.0-rc.5(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2))
       '@solidjs/testing-library':
         specifier: 0.8.10
         version: 0.8.10(solid-js@1.9.15)
@@ -1397,11 +1397,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/vite
       '@qwik.dev/core':
-        specifier: 2.0.0-rc.4
-        version: 2.0.0-rc.4(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2))
+        specifier: 2.0.0-rc.5
+        version: 2.0.0-rc.5(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2))
       '@qwik.dev/router':
-        specifier: 2.0.0-rc.4
-        version: 2.0.0-rc.4(@qwik.dev/core@2.0.0-rc.4(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2)))(rollup@4.63.1)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))
+        specifier: 2.0.0-rc.5
+        version: 2.0.0-rc.5(@qwik.dev/core@2.0.0-rc.5(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2)))(rollup@4.63.1)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))
       playwright-core:
         specifier: 1.65.0
         version: 1.65.0
@@ -7133,8 +7133,8 @@ packages:
     engines: {node: '>=20.12.0', pnpm: '>=11.0.0'}
     hasBin: true
 
-  '@qwik.dev/core@2.0.0-rc.4':
-    resolution: {integrity: sha512-z6M5WHPHD0IlCOFWCfuwk8ngUyQYQkkVdIlWBFWr5S9uTIVkYm8rugdF6JE06ICCh+08OHJsxjsuG0QA5wSVmw==}
+  '@qwik.dev/core@2.0.0-rc.5':
+    resolution: {integrity: sha512-Gr6LS2fcXM6Yazh3rUzd+efB82eEkDZ2c/lqWmx3h5rqH8mgu0g6b8BnJALuc3Hxs+zU3QkQEfAdFMXVRTWjZQ==}
     engines: {node: ^20.3.0 || >=21.0.0}
     hasBin: true
     peerDependencies:
@@ -7147,17 +7147,17 @@ packages:
       vitest:
         optional: true
 
-  '@qwik.dev/optimizer@2.1.0-rc.10':
-    resolution: {integrity: sha512-0yI+yY15xSEbBG0LSK5SYQSGU7EVXysHhea/BWb4yy0sGwThZsT6k4D7CgUrwVcuhfHPfBqSXALLvO8O5tc92Q==}
+  '@qwik.dev/optimizer@2.1.0-rc.11':
+    resolution: {integrity: sha512-8djnR+6zgLPSTpR7jcwb3V6DtfmgDgpQ5cndPNrLq0VRhsWD5ySX4uAySOIeTo90Ye3NT8MpC9R1VppandB79Q==}
     engines: {node: ^20.3.0 || >=21.0.0}
     peerDependencies:
       vite: '>=8 <9'
 
-  '@qwik.dev/router@2.0.0-rc.4':
-    resolution: {integrity: sha512-DTHUtTwCd0cIOjjxMZFzI0AJcDr43yKYh4/7tTJ3dZua79lIEP9KXoQsItIXkJhTiJn7+20ujsSHTsY2bB/gVg==}
+  '@qwik.dev/router@2.0.0-rc.5':
+    resolution: {integrity: sha512-Ni8Ms8CzgP2juEWmfGVnskNjS+fScmXbLuYgl81F9pHIaRzfk9m9a/qGh+UlCYhyUY0HVhkrLbKvdRqFFEwPvg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     peerDependencies:
-      '@qwik.dev/core': 2.0.0-rc.4
+      '@qwik.dev/core': 2.0.0-rc.5
       vite: '>=8 <9'
 
   '@remix-run/css-bundle@2.17.5':
@@ -24536,11 +24536,11 @@ snapshots:
     dependencies:
       '@projectwallace/css-parser': 0.18.12
 
-  '@qwik.dev/core@2.0.0-rc.4(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2))':
+  '@qwik.dev/core@2.0.0-rc.5(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2))':
     dependencies:
       '@emnapi/core': 1.11.2
       '@emnapi/runtime': 1.11.2
-      '@qwik.dev/optimizer': 2.1.0-rc.10(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))
+      '@qwik.dev/optimizer': 2.1.0-rc.11(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))
       csstype: 3.2.3
       launch-editor: 2.14.2
       magic-regexp: 0.11.2(esbuild@0.28.2)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2))
@@ -24565,16 +24565,16 @@ snapshots:
       - unloader
       - webpack
 
-  '@qwik.dev/optimizer@2.1.0-rc.10(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))':
+  '@qwik.dev/optimizer@2.1.0-rc.11(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))':
     dependencies:
       vite: 8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)
 
-  '@qwik.dev/router@2.0.0-rc.4(@qwik.dev/core@2.0.0-rc.4(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2)))(rollup@4.63.1)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))':
+  '@qwik.dev/router@2.0.0-rc.5(@qwik.dev/core@2.0.0-rc.5(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2)))(rollup@4.63.1)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))':
     dependencies:
       '@azure/functions': 3.5.1
       '@mdx-js/mdx': 3.1.1(supports-color@10.2.2)
       '@netlify/edge-functions': 3.0.8
-      '@qwik.dev/core': 2.0.0-rc.4(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2))
+      '@qwik.dev/core': 2.0.0-rc.5(@oxc-project/types@0.157.0)(esbuild@0.28.2)(prettier@3.2.5)(rolldown@1.3.0)(rollup@4.63.1)(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@24.10.15)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(vite@8.3.5(@types/node@24.10.15)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0)))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2))
       '@types/mdx': 2.0.14
       estree-util-value-to-estree: 3.5.0
       github-slugger: 2.0.0

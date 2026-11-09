@@ -19,7 +19,9 @@
     "types": ["node", "vite/client"],
     "paths": {
       "~/*": ["./src/*"],
-      "styled-system/*": ["./styled-system/*"]
+      "styled-system/*": ["./styled-system/*"],
+      "styled-system-minimal/*": ["./styled-system-minimal/*"],
+      "styled-system-none/*": ["./styled-system-none/*"]
     }
   },
   "include": ["src", "./*.d.ts", "panda.config.ts"]

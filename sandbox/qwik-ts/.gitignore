@@ -39,4 +39,4 @@ lerna-debug.log*
 !.yarn/releases
 ## Panda
 styled-system
-styled-system-static
+styled-system-*
