@@ -6,6 +6,7 @@ import { spawn } from 'child_process'
 const cli = cac('sct')
 const scenarioList = [
   'preact',
+  'qwik',
   'react',
   'solid',
   'vue',

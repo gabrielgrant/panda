@@ -26,5 +26,6 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src", "styled-system", "__tests__"],
+  "exclude": ["__tests__/frameworks/qwik.*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

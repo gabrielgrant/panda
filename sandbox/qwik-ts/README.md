@@ -1,65 +1,20 @@
-# Qwik City App ⚡️
+# Panda + Qwik
 
-- [Qwik Docs](https://qwik.builder.io/)
-- [Discord](https://qwik.builder.io/chat)
-- [Qwik GitHub](https://github.com/BuilderIO/qwik)
-- [@QwikDev](https://twitter.com/QwikDev)
-- [Vite](https://vitejs.dev/)
-
----
-
-## Project Structure
-
-This project is using Qwik with [QwikCity](https://qwik.builder.io/qwikcity/overview/). QwikCity is just an extra set of tools on top of Qwik to make it easier to build a full site, including directory-based routing, layouts, and more.
-
-Inside your project, you'll see the following directory structure:
-
-```
-├── public/
-│   └── ...
-└── src/
-    ├── components/
-    │   └── ...
-    └── routes/
-        └── ...
-```
-
-- `src/routes`: Provides the directory based routing, which can include a hierarchy of `layout.tsx` layout files, and an `index.tsx` file as the page. Additionally, `index.ts` files are endpoints. Please see the [routing docs](https://qwik.builder.io/qwikcity/routing/overview/) for more info.
-
-- `src/components`: Recommended directory for components.
-
-- `public`: Any static assets, like images, can be placed in the public directory. Please see the [Vite public directory](https://vitejs.dev/guide/assets.html#the-public-directory) for more info.
-
-## Add Integrations and deployment
-
-Use the `pnpm qwik add` command to add additional integrations. Some examples of integrations include: Cloudflare, Netlify or Express server, and the [Static Site Generator (SSG)](https://qwik.builder.io/qwikcity/guides/static-site-generation/).
+A [Qwik 2](https://qwik.dev/) app with Qwik Router, using `jsxFramework: 'qwik'`: the `styled` factory, patterns,
+`createSlotRecipeContext` and `createRecipeContext` (see `src/routes/index.tsx`).
 
 ```shell
-pnpm qwik add # or `yarn qwik add`
+pnpm dev                     # dev server with SSR
+pnpm build                   # client build and type check
+pnpm qwik build preview      # client and preview (SSR) build
 ```
 
-## Development
-
-Development mode uses [Vite's development server](https://vitejs.dev/). During development, the `dev` command will server-side render (SSR) the output.
+`e2e.mjs` checks the page in Chromium after SSR and resume: event handlers on `styled.*`, slot classes on every part,
+variant changes from props and from `PropsProvider`, `unstyled`, and the missing-provider error.
 
 ```shell
-npm start # or `yarn start`
+pnpm e2e                     # against the dev server
+pnpm e2e preview             # against the preview build
 ```
 
-> Note: during dev mode, Vite may request a significant number of `.js` files. This does not represent a Qwik production build.
-
-## Preview
-
-The preview command will create a production build of the client modules, a production build of `src/entry.preview.tsx`, and run a local server. The preview server is only for convenience to locally preview a production build, and it should not be used as a production server.
-
-```shell
-pnpm preview # or `yarn preview`
-```
-
-## Production
-
-The production build will generate client and server modules by running both client and server build commands. Additionally, the build command will use Typescript to run a type check on the source code.
-
-```shell
-pnpm build # or `yarn build`
-```
+It uses the Chromium from `playwright-core`; set `CHROMIUM_PATH` to use another one.

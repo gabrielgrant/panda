@@ -1,6 +1,6 @@
-import { component$, Slot } from '@builder.io/qwik'
-import { routeLoader$ } from '@builder.io/qwik-city'
-import { css } from 'styled-system/css'
+import { component$, Slot } from '@qwik.dev/core'
+import { routeLoader$ } from '@qwik.dev/router'
+import { styled } from 'styled-system/jsx'
 import { stack } from 'styled-system/patterns'
 
 import Footer from '~/components/footer'
@@ -16,9 +16,9 @@ export default component$(() => {
   return (
     <div class={stack({ padding: '10', bg: 'gray.900', height: '100vh', gap: '10' })}>
       <Header />
-      <main class={css({ flex: '1' })}>
+      <styled.main flex="1">
         <Slot />
-      </main>
+      </styled.main>
       <Footer />
     </div>
   )

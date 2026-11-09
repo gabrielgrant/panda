@@ -1,4 +1,4 @@
-import { component$ } from '@builder.io/qwik'
+import { component$ } from '@qwik.dev/core'
 import { QwikLogo } from './qwik-logo'
 import { hstack } from 'styled-system/patterns'
 import { css } from 'styled-system/css'

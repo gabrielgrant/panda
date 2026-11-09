@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { qwikVite } from '@qwik.dev/core/optimizer'
 import solid from 'vite-plugin-solid'
 import Vue from '@vitejs/plugin-vue'
 import preact from '@preact/preset-vite'
@@ -113,6 +114,18 @@ const options: TestUserConfig = {
       globals: true,
     },
   },
+  qwik: {
+    plugins: [qwikVite()],
+    test: {
+      include: ['**/__tests__/**/frameworks/qwik.*.{test,spec}.{j,t}s?(x)'],
+      typecheck: {
+        enabled: typecheck,
+        include: ['**/__tests__/**/frameworks/qwik.*.{test,spec}.{j,t}s?(x)'],
+        tsconfig: './tsconfig.qwik.json',
+      },
+      environment: 'node',
+    },
+  },
 } as Record<string, UserConfig>
 
 const mode = process.env.MODE ?? 'react'
@@ -120,6 +133,8 @@ console.log({ mode })
 const config = options[mode]
 
 export default defineConfig({
+  // Vite 8 honours the tsconfig's `jsx: preserve`, so modes without a framework plugin compile React JSX here
+  oxc: config.plugins ? undefined : { jsx: { runtime: 'automatic' } },
   ...config,
   test: { ...config.test, typecheck: { ...config.test?.typecheck, checker: 'tsgo' } },
 })

@@ -1,4 +1,4 @@
-import { component$ } from '@builder.io/qwik'
+import { component$ } from '@qwik.dev/core'
 import { hstack } from 'styled-system/patterns'
 import { useServerTimeLoader } from '~/routes/layout'
 

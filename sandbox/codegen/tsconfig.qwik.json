@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // @qwik.dev/core's own declarations fail to check with exactOptionalPropertyTypes
+    "exactOptionalPropertyTypes": false
+  },
+  "include": ["styled-system-qwik", "__tests__/frameworks/qwik.*"],
+  "exclude": []
+}

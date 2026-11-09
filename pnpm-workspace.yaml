@@ -40,3 +40,9 @@ minimumReleaseAgeExclude:
   - happy-dom@20.14.0
   - postcss@8.5.28
   - '@types/react-dom@19.2.7'
+packageExtensions:
+  # The Qwik optimizer imports `vite` at runtime without declaring it, so it would
+  # otherwise resolve whichever vite pnpm hoisted instead of the app's vite 8.
+  '@qwik.dev/optimizer':
+    peerDependencies:
+      vite: '>=8 <9'
