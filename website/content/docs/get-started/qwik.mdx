@@ -220,11 +220,17 @@ export default component$(() => {
 })
 ```
 
-Qwik serializes component props, so recipe contexts have a few rules:
+Create recipe contexts and their parts at module scope, since a `component$` can only use bindings from there. Parts
+can wrap tags, `component$` components, or plain function components, and their options don't need to be
+serializable.
 
-- Call `createRecipeContext`, `createSlotRecipeContext`, and their `with*` helpers at module scope.
-- Wrap tag names or `component$` components. Plain function components can't be serialized.
-- Keep `defaultProps` serializable.
+A context's id comes from its recipe, so the server and the resumed client agree on it. When one recipe backs two
+contexts, give each its own `id` (in development, Panda warns when you don't):
+
+```tsx
+const menu = createSlotRecipeContext(listbox, { id: 'menu' })
+const select = createSlotRecipeContext(listbox, { id: 'select' })
+```
 
 ### Optional: drop the styling runtime
 
