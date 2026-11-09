@@ -9,6 +9,7 @@
 use pandacss_config::JsxStylePropsConfig;
 
 use super::jsx_helper::{type_import, value_import};
+use super::qwik_jsx::TO_CLASS_NAME;
 use super::react_recipe_context::{CREATE_RECIPE_CONTEXT_TYPES, CREATE_SLOT_RECIPE_CONTEXT_TYPES};
 use super::solid_recipe_context::slot_resolve_props;
 use super::{factory_name, style_props};
@@ -16,6 +17,10 @@ use crate::{CodegenContext, ImportDecl, Item, Module, RuntimeImport};
 
 pub(super) fn recipe_module(ctx: CodegenContext<'_>) -> Module {
     base_module(ctx)
+        .with_import(value_import(
+            &["cx"],
+            &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
+        ))
         .with_import(type_import(
             &[
                 "RecipeDefinition",
@@ -85,6 +90,7 @@ fn base_module(ctx: CodegenContext<'_>) -> Module {
                 "createContextId",
                 "createSignal",
                 "isDev",
+                "isSignal",
                 "jsx",
                 "noSerialize",
                 "untrack",
@@ -118,7 +124,7 @@ fn base_module(ctx: CodegenContext<'_>) -> Module {
             "../types/jsx",
         ))
         .with_import(type_import(
-            &["FunctionComponent", "JSXOutput", "Signal"],
+            &["ClassList", "FunctionComponent", "JSXOutput", "Signal"],
             "@qwik.dev/core",
         ))
 }
@@ -129,7 +135,8 @@ fn qwik_source(ctx: CodegenContext<'_>, types: &str, runtime: &str) -> String {
     let types = types
         .replace("JSX.Element", "JSXOutput")
         .replace("Provider<", "ContextProviderComponent<");
-    format!("{types}\n\n{SHARED_RUNTIME}\n\n{runtime}").replace("__FACTORY__", &factory_name(ctx))
+    format!("{types}\n\n{SHARED_RUNTIME}\n\n{TO_CLASS_NAME}\n\n{runtime}")
+        .replace("__FACTORY__", &factory_name(ctx))
 }
 
 const SHARED_RUNTIME: &str = r"type Props = Record<string, unknown>
@@ -156,6 +163,7 @@ function renderHost(Host: FunctionComponent<Props>, ctx: string, part: object | 
   const tick = createSignal(0)
   hostProps.__seen = tick.value
   hostProps.children ??= defaultChildren
+  if (hostProps.class != null) hostProps.class = toClassName(hostProps.class as ClassList)
   return jsx(Host, Object.assign(hostProps, { __ctx: ctx, __part: part, __tick: tick }))
 }
 
@@ -323,7 +331,7 @@ const SlotProvider: FunctionComponent<Props> = component$<Props>((props) => {
   }
   const merged = contextProps ? mergeDefaultProps(contextProps, ownProps) : ownProps
   const [slots, variantProps, restProps] = useSlotStyles(__ctx as string, part, merged)
-  const defaultClass = part.options?.defaultProps?.class
+  const defaultClass = toClassName(part.options?.defaultProps?.class as ClassList)
   if (restProps.class == null && defaultClass) restProps.class = defaultClass
   const resolvedProps = resolveProps(restProps, slots[part.slot])
   part.options?.forwardProps?.forEach((key) => {
@@ -343,7 +351,7 @@ const SlotConsumer: FunctionComponent<Props> = component$<Props>((props) => {
     return SkipRender
   }
   if (!slots) throw new Error(part.missing)
-  const defaultClass = part.options?.defaultProps?.class
+  const defaultClass = toClassName(part.options?.defaultProps?.class as ClassList)
   const nextProps = ownProps.class == null && defaultClass ? { ...ownProps, class: defaultClass } : ownProps
   return renderSlot(part, resolveProps(nextProps, slots[part.slot]), slots)
 })

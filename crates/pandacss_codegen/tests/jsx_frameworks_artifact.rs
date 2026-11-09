@@ -1,4 +1,5 @@
 use crate::common::{artifact, file, paths, user_config};
+use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenContext, GenerateOptions};
 use pandacss_config::{CodegenFormat, JsxStylePropsConfig, UserConfig};
 
@@ -210,6 +211,14 @@ fn emits_qwik_recipe_contexts_where_the_qwik_optimizer_reads_them() {
         assert!(!code.starts_with("\"use client\";"));
     }
     assert!(recipe_code.contains("const RecipeConsumer = component$("));
+    assert!(
+        recipe_code.contains(
+            "if (hostProps.class != null) hostProps.class = toClassName(hostProps.class)"
+        )
+    );
+    assert!(
+        slot_code.contains("const defaultClass = toClassName(part.options?.defaultProps?.class)")
+    );
     assert!(slot_code.contains("const SlotProvider = component$("));
     assert!(slot_code.contains("const SlotConsumer = component$("));
     assert!(slot_code.contains("'data-slot': part.slot"));
@@ -289,8 +298,8 @@ fn emits_object_jsx_factory_for_non_react_frameworks() {
         ),
         (
             "qwik",
-            "import { jsx } from '@qwik.dev/core';",
-            "class: className,",
+            "import { isSignal, jsx } from '@qwik.dev/core';",
+            "toClassName(combinedProps.class), combinedProps.className",
             "import type { FunctionComponent, JSX, JSXChildren, JSXOutput, PropsOf } from '@qwik.dev/core';",
         ),
         (
@@ -357,4 +366,30 @@ fn types_index_reexports_jsx_for_non_react_frameworks() {
             "types/index.ts should re-export ./jsx for {framework}"
         );
     }
+}
+
+#[test]
+fn qwik_factory_turns_class_lists_into_class_names() {
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config("qwik")),
+        GenerateOptions::default(),
+    );
+    let code = file(
+        artifact(&artifacts, ArtifactId::JsxFactory),
+        "jsx/factory.mjs",
+    );
+    let start = code
+        .find("function toClassName")
+        .expect("toClassName helper");
+    let end = start + code[start..].find("\n}\n").expect("helper end") + 2;
+
+    assert_snapshot!(&code[start..end], @"
+    function toClassName(value) {
+      if (isSignal(value)) return toClassName(value.value)
+      if (!value || typeof value === 'string') return value || undefined
+      if (Array.isArray(value)) return cx(...value.map(toClassName))
+      return cx(...Object.keys(value).filter((key) => value[key]))
+    }
+    ");
+    assert!(code.contains("toClassName(combinedProps.class), combinedProps.className"));
 }
