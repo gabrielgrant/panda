@@ -1,7 +1,7 @@
 import { component$, useSignal, type PropsOf } from '@qwik.dev/core'
 import type { DocumentHead } from '@qwik.dev/router'
 import { css } from 'styled-system/css'
-import { Stack, createRecipeContext, createSlotRecipeContext, styled } from 'styled-system/jsx'
+import { Box, Stack, createRecipeContext, createSlotRecipeContext, styled } from 'styled-system/jsx'
 import { badge, card } from 'styled-system/recipes'
 
 const cardContext = createSlotRecipeContext(card)
@@ -59,12 +59,16 @@ export default component$(() => {
       </styled.button>
 
       <Card id="card" size={size}>
-        <CardTitle>Slot recipe card</CardTitle>
+        <CardTitle class={{ big: size === 'lg' }}>Slot recipe card</CardTitle>
         <CardBody>The size variant follows the click count.</CardBody>
         <CardBody id="bare" unstyled class="bare">
           Unstyled body
         </CardBody>
       </Card>
+
+      <Box id="flag" color="purple.200" class={['flag', { odd: count.value % 2 === 1 }]}>
+        Class list
+      </Box>
 
       <cardContext.PropsProvider value={{ size }}>
         <ProvidedCard />

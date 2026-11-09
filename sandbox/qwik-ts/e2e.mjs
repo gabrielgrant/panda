@@ -50,7 +50,8 @@ const pages = {
     return {
       '#count': `bg_blue.${step % 2 === 0 ? 500 : 700} c_white px_4 py_2`,
       '#card': `card__root card__root--size_${size}`,
-      '#card h2': `card__title card__title--size_${size}`,
+      '#card h2': `card__title card__title--size_${size}${size === 'lg' ? ' big' : ''}`,
+      '#flag': `c_purple.200 flag${step % 2 === 1 ? ' odd' : ''}`,
       '#card p:not(#bare)': `card__body card__body--size_${size}`,
       '#bare': 'bare',
       // the rest render in a component that only learns about the change from PropsProvider
