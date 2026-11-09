@@ -69,7 +69,7 @@ export interface TokenDictionaryInput {
   vars: Record<string, string>
 }
 
-export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | (string & {})
+export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik' | (string & {})
 
 export interface MatchersInput {
   css?: MatcherInput

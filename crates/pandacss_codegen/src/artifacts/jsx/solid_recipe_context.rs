@@ -128,7 +128,7 @@ fn create_slot_recipe_context_runtime(factory: &str, mode: JsxStylePropsConfig) 
         .replace("__RESOLVE_PROPS__", slot_resolve_props(mode))
 }
 
-fn slot_resolve_props(mode: JsxStylePropsConfig) -> &'static str {
+pub(super) fn slot_resolve_props(mode: JsxStylePropsConfig) -> &'static str {
     match mode {
         JsxStylePropsConfig::All => "return { ...slotStyles as SystemStyleObject, ...restProps }",
         JsxStylePropsConfig::Minimal => {

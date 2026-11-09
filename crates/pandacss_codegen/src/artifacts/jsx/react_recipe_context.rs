@@ -143,7 +143,7 @@ fn style_props(ctx: CodegenContext<'_>) -> JsxStylePropsConfig {
     ctx.config.jsx_style_props.unwrap_or_default()
 }
 
-const CREATE_RECIPE_CONTEXT_TYPES: &str = r"export type AnyRecipeDefinition = RecipeDefinition<RecipeVariantRecord>
+pub(super) const CREATE_RECIPE_CONTEXT_TYPES: &str = r"export type AnyRecipeDefinition = RecipeDefinition<RecipeVariantRecord>
 
 export interface RuntimeRecipeFn {
   __type: unknown
@@ -216,7 +216,7 @@ export function createRecipeContext<R extends RecipeContextRecipe>(recipeInput: 
   } as unknown as RecipeContext<R>
 }";
 
-const CREATE_SLOT_RECIPE_CONTEXT_TYPES: &str = r"export type AnySlotRecipeDefinition = SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>
+pub(super) const CREATE_SLOT_RECIPE_CONTEXT_TYPES: &str = r"export type AnySlotRecipeDefinition = SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>
 
 export interface RuntimeSlotRecipeFn {
   __type: unknown

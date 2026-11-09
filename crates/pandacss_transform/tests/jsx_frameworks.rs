@@ -1,4 +1,4 @@
-//! Solid and Vue class-attribute conventions.
+//! Solid, Vue, and Qwik class-attribute conventions.
 
 use super::common::transform_jsx_for_framework;
 use indoc::indoc;
@@ -131,4 +131,30 @@ fn vue_wraps_a_class_record_in_an_array_with_panda_classes() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const el = <div class={[{ 'text-red-500': isError, 'p-4': true }, "color_blue"]} />;"#);
+}
+
+#[test]
+fn qwik_box_becomes_a_div_with_a_class_attribute() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box color="red" />;
+    "#};
+
+    let output = transform_jsx_for_framework("qwik", "src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div class="color_red" />;"#);
+}
+
+#[test]
+fn qwik_appends_panda_classes_to_a_class_array() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box class={[styles.container, { active: true }]} color="red" />;
+    "#};
+
+    let output = transform_jsx_for_framework("qwik", "src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div class={[styles.container, { active: true }, "color_red"]} />;"#);
 }

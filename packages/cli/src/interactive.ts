@@ -104,6 +104,7 @@ export async function promptInitFlags(): Promise<InteractiveAnswers> {
         { value: 'preact', label: 'Preact' },
         { value: 'vue', label: 'Vue' },
         { value: 'solid', label: 'Solid' },
+        { value: 'qwik', label: 'Qwik' },
       ],
     }),
   )

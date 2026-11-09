@@ -4,13 +4,38 @@ use pandacss_shared::js_ident;
 use super::jsx_helper::{type_import, value_import};
 use crate::{CodegenContext, ImportDecl, Item, Module, RuntimeImport};
 
+/// How a pattern component renders: React wraps it in `forwardRef` and calls
+/// `createElement`; Qwik has no refs to forward and calls `jsx`.
+#[derive(Clone, Copy)]
+enum Renderer {
+    React,
+    Qwik,
+}
+
 pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) -> Module {
+    module_for(ctx, name, pattern, Renderer::React)
+}
+
+pub(super) fn qwik_module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) -> Module {
+    module_for(ctx, name, pattern, Renderer::Qwik)
+}
+
+fn module_for(
+    ctx: CodegenContext<'_>,
+    name: &str,
+    pattern: &PatternConfig,
+    renderer: Renderer,
+) -> Module {
     let factory = factory_name(ctx);
     let meta = ctx.pattern_jsx_meta(name, pattern);
     let pattern_fn = js_ident(name);
+    let (runtime_import, framework) = match renderer {
+        Renderer::React => (&["createElement", "forwardRef"][..], "react"),
+        Renderer::Qwik => (&["jsx"][..], "@qwik.dev/core"),
+    };
 
     let mut module = Module::new()
-        .with_import(value_import(&["createElement", "forwardRef"], "react"))
+        .with_import(value_import(runtime_import, framework))
         .with_import(value_import(
             &[pattern_fn.as_str()],
             &format!("../patterns/{}", meta.stem),
@@ -20,7 +45,7 @@ pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfi
             &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
         .with_import(value_import(&[factory.as_str()], "./factory"))
-        .with_import(type_import(&["FunctionComponent"], "react"))
+        .with_import(type_import(&["FunctionComponent"], framework))
         .with_import(type_import(
             &[meta.props_name.as_str()],
             &format!("../patterns/{}", meta.stem),
@@ -49,6 +74,7 @@ pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfi
             &meta.jsx_element,
             &pattern_fn,
             style_props(ctx),
+            renderer,
         ),
     )))
 }
@@ -60,28 +86,34 @@ fn pattern_runtime_body(
     jsx_element: &str,
     pattern_fn: &str,
     mode: JsxStylePropsConfig,
+    renderer: Renderer,
 ) -> String {
-    let body = match mode {
-        JsxStylePropsConfig::All => {
-            "const mergedProps = { ref, ...styleProps, ...restProps }".to_owned()
-        }
-        JsxStylePropsConfig::Minimal => {
-            "const mergedProps = { ref, ...restProps, css: mergeCss(styleProps, props.css) }"
-                .to_owned()
-        }
-        JsxStylePropsConfig::None => {
-            "const mergedProps = { ref, ...restProps, css: styleProps }".to_owned()
-        }
+    let props = match mode {
+        JsxStylePropsConfig::All => "...styleProps, ...restProps",
+        JsxStylePropsConfig::Minimal => "...restProps, css: mergeCss(styleProps, props.css)",
+        JsxStylePropsConfig::None => "...restProps, css: styleProps",
     };
+    let body = format!(
+        r"  const [patternProps, restProps] = splitProps(props, {pattern_fn}.propKeys)
+  const styleProps = {pattern_fn}.raw(patternProps)"
+    );
 
-    format!(
-        r"export const {jsx_name}: FunctionComponent<{component_props}> = /* @__PURE__ */ forwardRef<unknown, {component_props}>(function {jsx_name}(props, ref) {{
-  const [patternProps, restProps] = splitProps(props, {pattern_fn}.propKeys)
-  const styleProps = {pattern_fn}.raw(patternProps)
-  {body}
+    match renderer {
+        Renderer::React => format!(
+            r"export const {jsx_name}: FunctionComponent<{component_props}> = /* @__PURE__ */ forwardRef<unknown, {component_props}>(function {jsx_name}(props, ref) {{
+{body}
+  const mergedProps = {{ ref, {props} }}
   return createElement({factory}[{jsx_element:?}], mergedProps)
 }})"
-    )
+        ),
+        Renderer::Qwik => format!(
+            r"export const {jsx_name}: FunctionComponent<{component_props}> = function {jsx_name}(props: {component_props}) {{
+{body}
+  const mergedProps = {{ {props} }}
+  return jsx({factory}[{jsx_element:?}], mergedProps)
+}}"
+        ),
+    }
 }
 
 fn factory_name(ctx: CodegenContext<'_>) -> String {

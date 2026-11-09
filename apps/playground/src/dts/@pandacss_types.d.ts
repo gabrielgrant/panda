@@ -11643,7 +11643,7 @@ export interface FileSystemOptions {
 	 */
 	logLevel?: "debug" | "info" | "warn" | "error" | "silent";
 }
-export type JsxFramework = "react" | "solid" | "preact" | "vue";
+export type JsxFramework = "react" | "solid" | "preact" | "vue" | "qwik";
 export interface JsxOptions {
 	/**
 	 * The framework to use for generating supercharged elements.

@@ -65,6 +65,9 @@ fn object_literal_module(
                 upper_name,
                 html_props_name,
             ))),
+        Some(JsxFramework::Qwik) => {
+            qwik_object_literal_module(component_name, upper_name, html_props_name)
+        }
         Some(JsxFramework::Vue) => Module::new()
             .with_import(ImportDecl::ty(
                 ["Component", "FunctionalComponent", "NativeElements"],
@@ -91,6 +94,43 @@ fn object_literal_module(
             ))),
         _ => react_object_literal_module(component_name, upper_name, html_props_name),
     }
+}
+
+fn qwik_object_literal_module(
+    component_name: &str,
+    upper_name: &str,
+    html_props_name: &str,
+) -> Module {
+    Module::new()
+        .with_import(ImportDecl::ty(
+            [
+                "FunctionComponent",
+                "JSX",
+                "JSXChildren",
+                "JSXOutput",
+                "PropsOf",
+            ],
+            "@qwik.dev/core",
+        ))
+        .with_import(ImportDecl::ty(
+            ["RecipeDefinition", "RecipeSelection", "RecipeVariantRecord"],
+            "./recipe",
+        ))
+        .with_import(ImportDecl::ty(
+            [
+                "Assign",
+                "DistributiveUnion",
+                "JsxHTMLProps",
+                "JsxStyleProps",
+                "Pretty",
+            ],
+            "./system",
+        ))
+        .with_item(type_raw(qwik_jsx_type_code(
+            component_name,
+            upper_name,
+            html_props_name,
+        )))
 }
 
 fn react_object_literal_module(
@@ -224,6 +264,18 @@ fn solid_jsx_type_code(component_name: &str, upper_name: &str, html_props_name: 
         "defaultProps?: MaybeAccessor<Partial<TProps> & DataAttrs>",
     );
     code
+}
+
+fn qwik_jsx_type_code(component_name: &str, upper_name: &str, html_props_name: &str) -> String {
+    framework_jsx_type_code(
+        component_name,
+        upper_name,
+        html_props_name,
+        "export type ElementType = keyof JSX.IntrinsicElements | FunctionComponent<any>\n\nexport type ComponentProps<T extends ElementType> = T extends keyof JSX.IntrinsicElements ? JSX.IntrinsicElements[T] : PropsOf<T>\n\nexport type ContextProviderComponent<T> = FunctionComponent<{ value: T; children?: JSXChildren }>",
+        "ComponentProps<T>",
+        "JSXOutput",
+        "keyof JSX.IntrinsicElements",
+    )
 }
 
 fn vue_jsx_type_code(component_name: &str, upper_name: &str, html_props_name: &str) -> String {

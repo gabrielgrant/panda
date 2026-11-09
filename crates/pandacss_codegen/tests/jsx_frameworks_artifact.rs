@@ -32,6 +32,12 @@ fn emits_pattern_jsx_for_non_react_frameworks() {
             "import type { FunctionComponent } from 'preact';",
         ),
         (
+            "qwik",
+            "import { jsx } from '@qwik.dev/core';",
+            "return jsx(panda[\"section\"], mergedProps)",
+            "import type { FunctionComponent } from '@qwik.dev/core';",
+        ),
+        (
             "solid",
             "from 'solid-js';",
             "createComponent(panda[\"section\"], mergedProps)",
@@ -159,9 +165,59 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
 }
 
 #[test]
+fn emits_qwik_recipe_contexts_where_the_qwik_optimizer_reads_them() {
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config("qwik")),
+        GenerateOptions {
+            import_extensions: true,
+            ..GenerateOptions::default()
+        },
+    );
+    let recipe = artifact(&artifacts, ArtifactId::JsxCreateRecipeContext);
+    let slot_recipe = artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext);
+    let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.mjs");
+
+    assert_eq!(
+        paths(recipe),
+        vec![
+            "jsx/create-recipe-context.qwik.mjs",
+            "jsx/create-recipe-context.qwik.d.mts"
+        ]
+    );
+    assert_eq!(
+        paths(slot_recipe),
+        vec![
+            "jsx/create-slot-recipe-context.qwik.mjs",
+            "jsx/create-slot-recipe-context.qwik.d.mts"
+        ]
+    );
+    assert!(index.contains("export * from './create-recipe-context.qwik.mjs'"));
+    assert!(index.contains("export * from './create-slot-recipe-context.qwik.mjs'"));
+
+    let recipe_code = file(recipe, "jsx/create-recipe-context.qwik.mjs");
+    let slot_code = file(slot_recipe, "jsx/create-slot-recipe-context.qwik.mjs");
+    let slot_dts = file(slot_recipe, "jsx/create-slot-recipe-context.qwik.d.mts");
+
+    for code in [recipe_code, slot_code] {
+        assert!(code.contains("from '@qwik.dev/core';"));
+        assert!(code.contains("const PropsHost = component$((props) => {"));
+        assert!(code.contains("__recipe: noSerialize("));
+        assert!(!code.starts_with("\"use client\";"));
+    }
+    assert!(recipe_code.contains("const RecipeConsumer = component$("));
+    assert!(slot_code.contains("const SlotProvider = component$("));
+    assert!(slot_code.contains("const SlotConsumer = component$("));
+    assert!(slot_code.contains("'data-slot': slot"));
+    assert!(slot_dts.contains("export declare function createSlotRecipeContext"));
+    assert!(slot_dts.contains("PropsProvider: ContextProviderComponent<"));
+    assert!(slot_dts.contains("=> JSXOutput;"));
+}
+
+#[test]
 fn non_react_slot_recipe_contexts_preserve_style_prop_modes() {
     for (framework, marker) in [
         ("preact", "css.raw(slotStyles, restProps.css)"),
+        ("qwik", "css.raw(slotStyles, restProps.css)"),
         ("solid", "css.raw(slotStyles, restProps.css)"),
         ("vue", "css.raw(slotStyles, restProps.css)"),
     ] {
@@ -171,10 +227,8 @@ fn non_react_slot_recipe_contexts_preserve_style_prop_modes() {
             CodegenContext::config_only(&config),
             GenerateOptions::default(),
         );
-        let code = file(
-            artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext),
-            "jsx/create-slot-recipe-context.mjs",
-        );
+        let slot_recipe = artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext);
+        let code = file(slot_recipe, paths(slot_recipe)[0]);
 
         assert!(
             code.contains(marker),
@@ -226,6 +280,12 @@ fn emits_object_jsx_factory_for_non_react_frameworks() {
             "import type { ComponentProps, JSX } from 'preact';",
         ),
         (
+            "qwik",
+            "import { jsx } from '@qwik.dev/core';",
+            "class: className,",
+            "import type { FunctionComponent, JSX, JSXChildren, JSXOutput, PropsOf } from '@qwik.dev/core';",
+        ),
+        (
             "solid",
             "from 'solid-js';",
             "createComponent(",
@@ -274,7 +334,7 @@ fn emits_object_jsx_factory_for_non_react_frameworks() {
 
 #[test]
 fn types_index_reexports_jsx_for_non_react_frameworks() {
-    for framework in ["preact", "solid", "vue"] {
+    for framework in ["preact", "qwik", "solid", "vue"] {
         let artifacts = ArtifactGraph.generate_all(
             CodegenContext::config_only(&config(framework)),
             GenerateOptions {

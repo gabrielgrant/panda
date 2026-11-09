@@ -630,6 +630,7 @@ pub enum JsxFramework {
     Solid,
     Preact,
     Vue,
+    Qwik,
     Custom(String),
 }
 
@@ -641,6 +642,7 @@ impl JsxFramework {
             Self::Solid => "solid",
             Self::Preact => "preact",
             Self::Vue => "vue",
+            Self::Qwik => "qwik",
             Self::Custom(value) => value,
         }
     }
@@ -671,6 +673,7 @@ impl<'de> Deserialize<'de> for JsxFramework {
             "solid" => Self::Solid,
             "preact" => Self::Preact,
             "vue" => Self::Vue,
+            "qwik" => Self::Qwik,
             _ => Self::Custom(value),
         })
     }

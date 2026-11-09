@@ -201,7 +201,7 @@ interface FileSystemOptions {
   logLevel?: 'debug' | 'info' | 'warn' | 'error' | 'silent'
 }
 
-export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue'
+export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik'
 
 interface JsxOptions {
   /**

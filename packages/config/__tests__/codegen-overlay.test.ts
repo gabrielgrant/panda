@@ -371,7 +371,7 @@ describe('collectExportMissingDiagnostics', () => {
         ],
         overlayInput: { authored: NOTHING_AUTHORED, compatible: true },
       },
-      'qwik',
+      'custom-jsx',
     )
 
     expect(diagnostics).toEqual([])

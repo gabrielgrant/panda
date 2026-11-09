@@ -214,7 +214,7 @@ function identCollisions(kind: 'recipe' | 'pattern', names: string[]): Diagnosti
   return collisions
 }
 
-const JSX_FRAMEWORKS = new Set(['react', 'preact', 'solid', 'vue'])
+const JSX_FRAMEWORKS = new Set(['react', 'preact', 'solid', 'vue', 'qwik'])
 
 function generatesJsx(jsxFramework: string | undefined): boolean {
   return jsxFramework !== undefined && JSX_FRAMEWORKS.has(jsxFramework)

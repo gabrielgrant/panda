@@ -5,6 +5,8 @@ mod jsx_helper;
 mod preact_jsx;
 mod preact_pattern_jsx;
 mod preact_recipe_context;
+mod qwik_jsx;
+mod qwik_recipe_context;
 mod react_jsx;
 mod react_pattern_jsx;
 mod react_recipe_context;
@@ -100,11 +102,11 @@ pub fn generate_create_recipe_context(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Artifact {
-    let files = context_files(
+    let files = framework_files(
         ctx,
         options,
         dependencies,
-        "jsx/create-recipe-context",
+        &context_stem(ctx, "jsx/create-recipe-context"),
         recipe_context_module,
     );
 
@@ -121,11 +123,11 @@ pub fn generate_create_slot_recipe_context(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Artifact {
-    let files = context_files(
+    let files = framework_files(
         ctx,
         options,
         dependencies,
-        "jsx/create-slot-recipe-context",
+        &context_stem(ctx, "jsx/create-slot-recipe-context"),
         slot_recipe_context_module,
     );
 
@@ -174,28 +176,13 @@ fn framework_files(
     )
 }
 
-fn context_files(
-    ctx: CodegenContext<'_>,
-    options: GenerateOptions,
-    dependencies: DependencySet,
-    stem: &str,
-    module: fn(CodegenContext<'_>) -> Module,
-) -> Vec<ArtifactFile> {
-    if !matches!(
-        ctx.config.jsx_framework.as_ref(),
-        Some(JsxFramework::React | JsxFramework::Preact | JsxFramework::Solid | JsxFramework::Vue)
-    ) {
-        return Vec::new();
+/// Qwik's optimizer only extracts `component$` from `.ts`/`.tsx`/`.jsx` or
+/// `*.qwik.{js,mjs,cjs}` files, so the Qwik recipe-context modules get the `.qwik` infix.
+fn context_stem(ctx: CodegenContext<'_>, stem: &str) -> String {
+    match ctx.config.jsx_framework {
+        Some(JsxFramework::Qwik) => format!("{stem}.qwik"),
+        _ => stem.to_owned(),
     }
-
-    emit_module_files(
-        stem,
-        &jsx_module(ctx, stem, module),
-        options.format,
-        false,
-        options.import_extensions,
-        dependencies,
-    )
 }
 
 /// Shared runtime modules virtualize together when css/ is virtualized. `jsx/index`
@@ -206,7 +193,7 @@ fn jsx_module(
     module: fn(CodegenContext<'_>) -> Module,
 ) -> Module {
     if matches!(
-        stem,
+        stem.strip_suffix(".qwik").unwrap_or(stem),
         "jsx/factory"
             | "jsx/helper"
             | "jsx/is-valid-prop"
@@ -239,6 +226,7 @@ fn pattern_files(
         let module = match ctx.config.jsx_framework.as_ref() {
             Some(JsxFramework::React) => react_pattern_jsx::module(ctx, name, pattern),
             Some(JsxFramework::Preact) => preact_pattern_jsx::module(ctx, name, pattern),
+            Some(JsxFramework::Qwik) => react_pattern_jsx::qwik_module(ctx, name, pattern),
             Some(JsxFramework::Solid) => solid_pattern_jsx::module(ctx, name, pattern),
             Some(JsxFramework::Vue) => vue_pattern_jsx::module(ctx, name, pattern),
             _ => Module::new(),
@@ -257,17 +245,10 @@ fn pattern_files(
 }
 
 fn has_jsx_framework(ctx: CodegenContext<'_>) -> bool {
-    matches!(
-        ctx.config.jsx_framework.as_ref(),
-        Some(JsxFramework::React | JsxFramework::Preact | JsxFramework::Solid | JsxFramework::Vue)
-    )
-}
-
-fn has_context_framework(ctx: CodegenContext<'_>) -> bool {
-    matches!(
-        ctx.config.jsx_framework.as_ref(),
-        Some(JsxFramework::React | JsxFramework::Preact | JsxFramework::Solid | JsxFramework::Vue)
-    )
+    ctx.config
+        .jsx_framework
+        .as_ref()
+        .is_some_and(JsxFramework::is_known)
 }
 
 pub(super) fn style_props(ctx: CodegenContext<'_>) -> JsxStylePropsConfig {
@@ -354,6 +335,7 @@ fn factory_module(ctx: CodegenContext<'_>) -> Module {
     match ctx.config.jsx_framework.as_ref() {
         Some(JsxFramework::React) => react_jsx::module(ctx, &factory, &component, &upper),
         Some(JsxFramework::Preact) => preact_jsx::module(ctx, &factory, &component, &upper),
+        Some(JsxFramework::Qwik) => qwik_jsx::module(ctx, &factory, &component, &upper),
         Some(JsxFramework::Solid) => solid_jsx::module(ctx, &factory, &component, &upper),
         Some(JsxFramework::Vue) => vue_jsx::module(ctx, &factory, &component, &upper),
         _ => Module::new(),
@@ -364,6 +346,7 @@ fn recipe_context_module(ctx: CodegenContext<'_>) -> Module {
     match ctx.config.jsx_framework.as_ref() {
         Some(JsxFramework::React) => react_recipe_context::recipe_module(ctx),
         Some(JsxFramework::Preact) => preact_recipe_context::recipe_module(ctx),
+        Some(JsxFramework::Qwik) => qwik_recipe_context::recipe_module(ctx),
         Some(JsxFramework::Solid) => solid_recipe_context::recipe_module(ctx),
         Some(JsxFramework::Vue) => vue_recipe_context::recipe_module(ctx),
         _ => Module::new(),
@@ -374,6 +357,7 @@ fn slot_recipe_context_module(ctx: CodegenContext<'_>) -> Module {
     match ctx.config.jsx_framework.as_ref() {
         Some(JsxFramework::React) => react_recipe_context::slot_recipe_module(ctx),
         Some(JsxFramework::Preact) => preact_recipe_context::slot_recipe_module(ctx),
+        Some(JsxFramework::Qwik) => qwik_recipe_context::slot_recipe_module(ctx),
         Some(JsxFramework::Solid) => solid_recipe_context::slot_recipe_module(ctx),
         Some(JsxFramework::Vue) => vue_recipe_context::slot_recipe_module(ctx),
         _ => Module::new(),
@@ -391,12 +375,10 @@ fn index_module(ctx: CodegenContext<'_>) -> Module {
     }
 
     let mut local_sources = vec!["./factory".to_owned(), "./is-valid-prop".to_owned()];
-    if has_context_framework(ctx) {
-        local_sources.extend([
-            "./create-recipe-context".to_owned(),
-            "./create-slot-recipe-context".to_owned(),
-        ]);
-    }
+    local_sources.extend(
+        ["create-recipe-context", "create-slot-recipe-context"]
+            .map(|name| context_stem(ctx, &format!("./{name}"))),
+    );
     local_sources.extend(app_pattern_jsx_stems(ctx));
 
     module = local_sources.into_iter().fold(module, |module, source| {
