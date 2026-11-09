@@ -12,6 +12,8 @@ packages:
   - '!packages/compiler-wasm/pkg-web/**'
   # Fixture packages stand in for installed ones; one reuses the compiler's name.
   - '!packages/*/__tests__/fixtures/**'
+  # Standalone plugin built and tested against the published Panda (npm), not the workspace.
+  - '!packages/plugin-qwik/**'
 overrides:
   '@swc/helpers@~0.4': 0.4.36
   picomatch@4.0.3: 4.0.4
