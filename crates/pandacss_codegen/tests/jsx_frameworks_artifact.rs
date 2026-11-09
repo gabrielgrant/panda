@@ -176,7 +176,9 @@ fn emits_qwik_recipe_contexts_where_the_qwik_optimizer_reads_them() {
     let recipe = artifact(&artifacts, ArtifactId::JsxCreateRecipeContext);
     let slot_recipe = artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext);
     let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.mjs");
+    let jsx_types = file(artifact(&artifacts, ArtifactId::Types), "types/jsx.d.mts");
 
+    assert!(jsx_types.contains("export interface RecipeContextOptions"));
     assert_eq!(
         paths(recipe),
         vec![
@@ -201,16 +203,22 @@ fn emits_qwik_recipe_contexts_where_the_qwik_optimizer_reads_them() {
     for code in [recipe_code, slot_code] {
         assert!(code.contains("from '@qwik.dev/core';"));
         assert!(code.contains("const PropsHost = component$((props) => {"));
-        assert!(code.contains("__recipe: noSerialize("));
+        assert!(code.contains("const part = noSerialize("));
+        assert!(code.contains("untrack(() => __tick.value++)"));
+        assert!(code.contains("return SkipRender"));
+        assert!(code.contains("function contextId(prefix, recipe, name, options)"));
         assert!(!code.starts_with("\"use client\";"));
     }
     assert!(recipe_code.contains("const RecipeConsumer = component$("));
     assert!(slot_code.contains("const SlotProvider = component$("));
     assert!(slot_code.contains("const SlotConsumer = component$("));
-    assert!(slot_code.contains("'data-slot': slot"));
+    assert!(slot_code.contains("'data-slot': part.slot"));
     assert!(slot_dts.contains("export declare function createSlotRecipeContext"));
     assert!(slot_dts.contains("PropsProvider: ContextProviderComponent<"));
     assert!(slot_dts.contains("=> JSXOutput;"));
+    assert!(slot_dts.contains(
+        "createSlotRecipeContext<R extends SlotRecipeContextInput>(recipeInput: R, options?: RecipeContextOptions)"
+    ));
 }
 
 #[test]

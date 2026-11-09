@@ -271,7 +271,7 @@ fn qwik_jsx_type_code(component_name: &str, upper_name: &str, html_props_name: &
         component_name,
         upper_name,
         html_props_name,
-        "export type ElementType = keyof JSX.IntrinsicElements | FunctionComponent<any>\n\nexport type ComponentProps<T extends ElementType> = T extends keyof JSX.IntrinsicElements ? JSX.IntrinsicElements[T] : PropsOf<T>\n\nexport type ContextProviderComponent<T> = FunctionComponent<{ value: T; children?: JSXChildren }>",
+        "export type ElementType = keyof JSX.IntrinsicElements | FunctionComponent<any>\n\nexport type ComponentProps<T extends ElementType> = T extends keyof JSX.IntrinsicElements ? JSX.IntrinsicElements[T] : PropsOf<T>\n\nexport type ContextProviderComponent<T> = FunctionComponent<{ value: T; children?: JSXChildren }>\n\nexport interface RecipeContextOptions {\n  /** Context id, needed when one recipe backs more than one context */\n  id?: string | undefined\n}",
         "ComponentProps<T>",
         "JSXOutput",
         "keyof JSX.IntrinsicElements",

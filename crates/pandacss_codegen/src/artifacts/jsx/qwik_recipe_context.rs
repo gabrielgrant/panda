@@ -1,9 +1,10 @@
 //! Qwik recipe contexts. Hooks only run inside `component$`, and `component$`
 //! props must be serializable, so `withContext`/`withProvider`/`PropsProvider`
-//! return plain wrappers that hand serializable props (plus the recipe, marked
-//! `noSerialize`) to static `component$` hosts. After resume, a host that needs
-//! the recipe only re-renders once its own wrapper or its `PropsProvider` wrapper
-//! ran again on the client, and that run passes the recipe back in.
+//! return plain wrappers that render static `component$` hosts. The wrapper hands
+//! its host the part (recipe, options, wrapped component) marked `noSerialize`,
+//! plus a signal the wrapper reads. A resumed host that re-renders before its
+//! wrapper ran on the client has no part, so it bumps the signal to re-run the
+//! wrapper's component and skips that render.
 
 use pandacss_config::JsxStylePropsConfig;
 
@@ -79,10 +80,14 @@ fn base_module(ctx: CodegenContext<'_>) -> Module {
         .with_import(value_import(
             &[
                 "Slot",
+                "SkipRender",
                 "component$",
                 "createContextId",
+                "createSignal",
+                "isDev",
                 "jsx",
                 "noSerialize",
+                "untrack",
                 "useContext",
                 "useContextProvider",
                 "useStore",
@@ -106,18 +111,20 @@ fn base_module(ctx: CodegenContext<'_>) -> Module {
                 "DataAttrs",
                 "ElementType",
                 "JsxFactoryOptions",
+                "RecipeContextOptions",
                 "UnstyledProps",
                 "WithForwardedProps",
             ],
             "../types/jsx",
         ))
         .with_import(type_import(
-            &["FunctionComponent", "JSXOutput"],
+            &["FunctionComponent", "JSXOutput", "Signal"],
             "@qwik.dev/core",
         ))
 }
 
-/// The React context types with Qwik's element and provider types, then the runtime.
+/// The React context types with Qwik's element and provider types and the `id`
+/// option, then the runtime.
 fn qwik_source(ctx: CodegenContext<'_>, types: &str, runtime: &str) -> String {
     let types = types
         .replace("JSX.Element", "JSXOutput")
@@ -129,29 +136,52 @@ const SHARED_RUNTIME: &str = r"type Props = Record<string, unknown>
 
 interface PropsStore {
   value: Props | undefined
-  recipe: unknown
 }
 
+type StyledPart = (Component: ElementType, recipe: unknown, options?: unknown) => FunctionComponent<Props>
+
+const styledPart = __FACTORY__ as unknown as StyledPart
+
 const PropsHost: FunctionComponent<Props> = component$<Props>((props) => {
-  const store = useStore<PropsStore>({ value: props.value as Props, recipe: props.__recipe }, { deep: false })
+  const store = useStore<PropsStore>({ value: props.value as Props }, { deep: false })
   store.value = props.value as Props
-  store.recipe = props.__recipe
   useContextProvider(createContextId<PropsStore>(props.__ctx as string), store)
   return jsx(Slot, {})
 })
 
-// Context ids must match between the server and a resumed client, so they come from the recipe.
-function contextKey(recipe: object): string {
-  const { __name__, config } = recipe as { __name__?: string; config?: unknown }
-  return (__name__ ?? toHash(JSON.stringify(config ?? recipe) ?? String(recipe))).replace(/[^\w.-]/g, '_')
+// Copying the props and the tick reads them here, so the component that renders this wrapper
+// re-renders it when they change, instead of the change skipping the wrapper and its part.
+function renderHost(Host: FunctionComponent<Props>, ctx: string, part: object | undefined, props: Props, defaultChildren: unknown): JSXOutput {
+  const hostProps: Props = Object.assign({}, props)
+  const tick = createSignal(0)
+  hostProps.__seen = tick.value
+  hostProps.children ??= defaultChildren
+  return jsx(Host, Object.assign(hostProps, { __ctx: ctx, __part: part, __tick: tick }))
 }
 
-function hostOptions<T extends object>(options: T | undefined): T | undefined {
-  const shouldForwardProp = (options as { shouldForwardProp?: object } | undefined)?.shouldForwardProp
-  return shouldForwardProp ? { ...options, shouldForwardProp: noSerialize(shouldForwardProp) } as T : options
+const contextSites = new Map<string, string | undefined>()
+
+// Context ids must match between the server and a resumed client, so they come from the recipe, or
+// from `options.id` when one recipe backs several contexts.
+function contextId(prefix: string, recipe: object, name: string, options?: RecipeContextOptions): string {
+  const { __name__, config } = recipe as { __name__?: string; config?: unknown }
+  const key = options?.id ?? __name__ ?? toHash(JSON.stringify(config ?? recipe) ?? String(recipe))
+  const id = `${prefix}-${key.replace(/[^\w.-]/g, '_')}`
+  if (isDev && !options?.id) {
+    const site = new Error().stack?.split('\n').slice(0, 4).join('\n').replace(/\?[^:)\s]*/g, '')
+    if (contextSites.has(id) && contextSites.get(id) !== site) {
+      console.warn(`${name} was called twice for the same recipe without an \`id\`, so both share one Qwik context. Pass a unique \`id\` option to each call. A hot reload that moves the call can also show this.`)
+    }
+    contextSites.set(id, site)
+  }
+  return id
 }";
 
 const CREATE_RECIPE_CONTEXT_RUNTIME: &str = r"type RecipeShape = Partial<Record<'__recipe__' | '__cva__' | 'base' | 'variants' | 'defaultVariants' | 'compoundVariants', unknown>>
+
+interface RecipePart {
+  Styled: FunctionComponent<Props>
+}
 
 function resolveRecipe(recipe: RecipeShape | null | undefined): RecipeShape {
   if (recipe == null) throw new Error('createRecipeContext requires a recipe')
@@ -161,32 +191,29 @@ function resolveRecipe(recipe: RecipeShape | null | undefined): RecipeShape {
 }
 
 const RecipeConsumer: FunctionComponent<Props> = component$<Props>((props) => {
-  const { __ctx, __cmp, __options, __recipe, ...ownProps } = props
-  const propsContext = useContext(createContextId<PropsStore>(__ctx as string), null)
-  const recipe = __recipe ?? propsContext?.recipe
-  const mergedProps = propsContext?.value ? mergeDefaultProps(propsContext.value, ownProps) : ownProps
-  const StyledComponent = __FACTORY__(__cmp as ElementType, recipe as AnyRecipeDefinition, __options as JsxFactoryOptions<Props>)
-  return jsx(StyledComponent as FunctionComponent<Props>, { ...mergedProps, children: jsx(Slot, {}) })
+  const { __ctx, __part, __tick, __seen, ...ownProps } = props
+  const contextProps = useContext(createContextId<PropsStore>(__ctx as string), null)?.value
+  const part = __part as RecipePart | undefined
+  if (!part) {
+    // Resumed before its wrapper ran: re-run the wrapper's component and keep the current DOM. The read
+    // is untracked so this host doesn't subscribe to the tick.
+    untrack(() => (__tick as Signal<number>).value++)
+    return SkipRender
+  }
+  const mergedProps = contextProps ? mergeDefaultProps(contextProps, ownProps) : ownProps
+  return jsx(part.Styled, { ...mergedProps, children: jsx(Slot, {}) })
 })
 
-export function createRecipeContext<R extends RecipeContextRecipe>(recipeInput: R): RecipeContext<R> {
+export function createRecipeContext<R extends RecipeContextRecipe>(recipeInput: R, options?: RecipeContextOptions): RecipeContext<R> {
   const recipe = resolveRecipe(recipeInput as RecipeShape)
-  const ctx = `panda-recipe-${contextKey(recipe)}`
+  const ctx = contextId('panda-recipe', recipe, 'createRecipeContext', options)
   const usePropsContext = () => useContext(createContextId<PropsStore>(ctx), null)?.value
 
-  const PropsProvider = (props: Props) =>
-    jsx(PropsHost, { value: props.value, children: props.children, __ctx: ctx, __recipe: noSerialize(recipe) })
+  const PropsProvider = (props: Props) => jsx(PropsHost, { value: props.value, children: props.children, __ctx: ctx })
 
-  const withContext = (Component: ElementType, options?: JsxFactoryOptions<Props>) => {
-    const WithContext = (props: Props) =>
-      jsx(RecipeConsumer, {
-        ...props,
-        children: props.children ?? options?.defaultProps?.children,
-        __ctx: ctx,
-        __cmp: Component,
-        __options: hostOptions(options),
-        __recipe: noSerialize(recipe),
-      })
+  const withContext = (Component: ElementType, partOptions?: JsxFactoryOptions<Props>) => {
+    const part = noSerialize<RecipePart>({ Styled: styledPart(Component, recipe, partOptions) })
+    const WithContext = (props: Props) => renderHost(RecipeConsumer, ctx, part, props, partOptions?.defaultProps?.children)
     WithContext.displayName = `withContext(${getDisplayName(Component as Parameters<typeof getDisplayName>[0])})`
     return WithContext
   }
@@ -222,6 +249,14 @@ interface SlotOptions {
   forwardProps?: readonly string[]
 }
 
+interface SlotPart {
+  recipe: SlotRecipeRuntime
+  Styled: FunctionComponent<Props>
+  slot: string
+  options?: SlotOptions | undefined
+  missing?: string
+}
+
 interface SlotStore {
   slots: SlotStyles
 }
@@ -241,98 +276,110 @@ const resolveProps = (props: Props, slotStyles: unknown): Props => {
   __RESOLVE_PROPS__
 }
 
-const useSlotStyles = (ctx: string, recipeProp: unknown, ownProps: Props): [SlotStyles, Props, Props] => {
-  const propsContext = useContext(createContextId<PropsStore>(`${ctx}-props`), null)
-  const recipe = (recipeProp ?? propsContext?.recipe) as SlotRecipeRuntime
-  const props = propsContext?.value ? mergeDefaultProps(propsContext.value, ownProps) : ownProps
-  const [variantProps, restProps] = recipe.splitVariantProps(props)
-  const slots = recipe.__recipe__ !== undefined ? recipe(variantProps) : recipe.raw(variantProps)
-  if (recipe.__recipe__ === undefined) slots._classNameMap = recipe.classNameMap
+const useSlotStyles = (ctx: string, part: SlotPart, props: Props): [SlotStyles, Props, Props] => {
+  const [variantProps, restProps] = part.recipe.splitVariantProps(props)
+  const slots = part.recipe.__recipe__ !== undefined ? part.recipe(variantProps) : part.recipe.raw(variantProps)
+  if (part.recipe.__recipe__ === undefined) slots._classNameMap = part.recipe.classNameMap
   const store = useStore<SlotStore>({ slots }, { deep: false })
   store.slots = slots
   useContextProvider(createContextId<SlotStore>(ctx), store)
   return [slots, variantProps, restProps]
 }
 
-const renderSlot = (Component: unknown, slot: string, options: unknown, props: Props, slots: SlotStyles) =>
-  jsx(__FACTORY__(Component as ElementType, {}, options as JsxFactoryOptions<Props>) as FunctionComponent<Props>, {
+const renderSlot = (part: SlotPart, props: Props, slots: SlotStyles) =>
+  jsx(part.Styled, {
     ...props,
-    class: cx(props.class as string, slots._classNameMap?.[slot]),
-    'data-slot': slot,
+    class: cx(props.class as string, slots._classNameMap?.[part.slot]),
+    'data-slot': part.slot,
     children: jsx(Slot, {}),
   })
 
 const SlotRootProvider: FunctionComponent<Props> = component$<Props>((props) => {
-  const { __ctx, __recipe, __cmp, __options, ...ownProps } = props
-  const [, , otherProps] = useSlotStyles(__ctx as string, __recipe, ownProps)
-  const defaultProps = (__options as SlotOptions | undefined)?.defaultProps
+  const { __ctx, __part, __tick, __seen, ...ownProps } = props
+  const contextProps = useContext(createContextId<PropsStore>(`${__ctx}-props`), null)?.value
+  const part = __part as SlotPart | undefined
+  if (!part) {
+    // Resumed before its wrapper ran: re-run the wrapper's component and keep the current DOM. The read
+    // is untracked so this host doesn't subscribe to the tick.
+    untrack(() => (__tick as Signal<number>).value++)
+    return SkipRender
+  }
+  const merged = contextProps ? mergeDefaultProps(contextProps, ownProps) : ownProps
+  const [, , otherProps] = useSlotStyles(__ctx as string, part, merged)
+  const defaultProps = part.options?.defaultProps
   const mergedProps = defaultProps ? mergeDefaultProps(defaultProps, otherProps) : otherProps
-  return jsx(__cmp as FunctionComponent<Props>, { ...mergedProps, children: jsx(Slot, {}) })
+  return jsx(part.Styled, { ...mergedProps, children: jsx(Slot, {}) })
 })
 
 const SlotProvider: FunctionComponent<Props> = component$<Props>((props) => {
-  const { __ctx, __recipe, __cmp, __slot, __options, ...ownProps } = props
-  const slot = __slot as string
-  const options = __options as SlotOptions | undefined
-  const [slots, variantProps, restProps] = useSlotStyles(__ctx as string, __recipe, ownProps)
-  if (restProps.class == null && options?.defaultProps?.class) restProps.class = options.defaultProps.class
-  const resolvedProps = resolveProps(restProps, slots[slot])
-  options?.forwardProps?.forEach((key) => {
+  const { __ctx, __part, __tick, __seen, ...ownProps } = props
+  const contextProps = useContext(createContextId<PropsStore>(`${__ctx}-props`), null)?.value
+  const part = __part as SlotPart | undefined
+  if (!part) {
+    // Resumed before its wrapper ran: re-run the wrapper's component and keep the current DOM. The read
+    // is untracked so this host doesn't subscribe to the tick.
+    untrack(() => (__tick as Signal<number>).value++)
+    return SkipRender
+  }
+  const merged = contextProps ? mergeDefaultProps(contextProps, ownProps) : ownProps
+  const [slots, variantProps, restProps] = useSlotStyles(__ctx as string, part, merged)
+  const defaultClass = part.options?.defaultProps?.class
+  if (restProps.class == null && defaultClass) restProps.class = defaultClass
+  const resolvedProps = resolveProps(restProps, slots[part.slot])
+  part.options?.forwardProps?.forEach((key) => {
     if (key in variantProps) resolvedProps[key] = variantProps[key]
   })
-  return renderSlot(__cmp, slot, options, resolvedProps, slots)
+  return renderSlot(part, resolvedProps, slots)
 })
 
 const SlotConsumer: FunctionComponent<Props> = component$<Props>((props) => {
-  const { __ctx, __cmp, __slot, __options, __missing, ...ownProps } = props
-  const store = useContext(createContextId<SlotStore>(__ctx as string), null)
-  if (!store) throw new Error(__missing as string)
-  const slot = __slot as string
-  const options = __options as SlotOptions | undefined
-  const nextProps = ownProps.class == null && options?.defaultProps?.class
-    ? { ...ownProps, class: options.defaultProps.class }
-    : ownProps
-  return renderSlot(__cmp, slot, options, resolveProps(nextProps, store.slots[slot]), store.slots)
+  const { __ctx, __part, __tick, __seen, ...ownProps } = props
+  const slots = useContext(createContextId<SlotStore>(__ctx as string), null)?.slots
+  const part = __part as SlotPart | undefined
+  if (!part) {
+    // Resumed before its wrapper ran: re-run the wrapper's component and keep the current DOM. The read
+    // is untracked so this host doesn't subscribe to the tick.
+    untrack(() => (__tick as Signal<number>).value++)
+    return SkipRender
+  }
+  if (!slots) throw new Error(part.missing)
+  const defaultClass = part.options?.defaultProps?.class
+  const nextProps = ownProps.class == null && defaultClass ? { ...ownProps, class: defaultClass } : ownProps
+  return renderSlot(part, resolveProps(nextProps, slots[part.slot]), slots)
 })
 
-export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipeInput: R): SlotRecipeContext<R> {
+export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipeInput: R, options?: RecipeContextOptions): SlotRecipeContext<R> {
   const recipe = resolveSlotRecipe(recipeInput as SlotRecipeShape)
   const isRuntimeRecipe = typeof recipe.splitVariantProps === 'function'
   const recipeName = isRuntimeRecipe && recipe.__name__ ? recipe.__name__ : undefined
   const contextName = recipeName ? `createSlotRecipeContext("${recipeName}")` : 'createSlotRecipeContext'
   const slotRecipeFn = isRuntimeRecipe ? recipe as SlotRecipeRuntime : sva(recipe.config ?? recipe as AnySlotRecipeDefinition) as unknown as SlotRecipeRuntime
-  const ctx = `panda-slot-recipe-${contextKey(slotRecipeFn)}`
+  const ctx = contextId('panda-slot-recipe', slotRecipeFn, contextName, options)
   const usePropsContext = () => useContext(createContextId<PropsStore>(`${ctx}-props`), null)?.value
 
-  const host = (Host: FunctionComponent<Props>, Component: ElementType, options: SlotOptions | undefined, props: Props, extra?: Props) =>
-    jsx(Host, {
-      ...props,
-      children: props.children ?? options?.defaultProps?.children,
-      ...extra,
-      __ctx: ctx,
-      __cmp: Component,
-      __options: hostOptions(options),
-    })
+  const PropsProvider = (props: Props) => jsx(PropsHost, { value: props.value, children: props.children, __ctx: `${ctx}-props` })
 
-  const PropsProvider = (props: Props) =>
-    jsx(PropsHost, { value: props.value, children: props.children, __ctx: `${ctx}-props`, __recipe: noSerialize(slotRecipeFn) })
-
-  const withRootProvider = (Component: ElementType, options?: SlotOptions) => {
-    const WithRootProvider = (props: Props) => host(SlotRootProvider, Component, options, props, { __recipe: noSerialize(slotRecipeFn) })
+  const withRootProvider = (Component: ElementType, partOptions?: SlotOptions) => {
+    const part = noSerialize<SlotPart>({ recipe: slotRecipeFn, Styled: Component as FunctionComponent<Props>, slot: '', options: partOptions })
+    const WithRootProvider = (props: Props) => renderHost(SlotRootProvider, ctx, part, props, partOptions?.defaultProps?.children)
     WithRootProvider.displayName = `withRootProvider(${getDisplayName(Component as Parameters<typeof getDisplayName>[0])})`
     return WithRootProvider
   }
 
-  const withProvider = (Component: ElementType, slot: string, options?: SlotOptions) => {
-    const WithProvider = (props: Props) => host(SlotProvider, Component, options, props, { __slot: slot, __recipe: noSerialize(slotRecipeFn) })
+  const withProvider = (Component: ElementType, slot: string, partOptions?: SlotOptions) => {
+    const Styled = styledPart(Component, {}, partOptions)
+    const part = noSerialize<SlotPart>({ recipe: slotRecipeFn, Styled, slot, options: partOptions })
+    const WithProvider = (props: Props) => renderHost(SlotProvider, ctx, part, props, partOptions?.defaultProps?.children)
     WithProvider.displayName = `withProvider(${getDisplayName(Component as Parameters<typeof getDisplayName>[0])})`
     return WithProvider
   }
 
-  const withContext = (Component: ElementType, slot: string, options?: SlotOptions) => {
+  const withContext = (Component: ElementType, slot: string, partOptions?: SlotOptions) => {
     const componentName = getDisplayName(Component as Parameters<typeof getDisplayName>[0])
     const missing = `Component "${componentName}" (slot: "${slot}") cannot access ${contextName} because it's missing its Provider.`
-    const WithContext = (props: Props) => host(SlotConsumer, Component, options, props, { __slot: slot, __missing: missing })
+    const Styled = styledPart(Component, {}, partOptions)
+    const part = noSerialize<SlotPart>({ recipe: slotRecipeFn, Styled, slot, options: partOptions, missing })
+    const WithContext = (props: Props) => renderHost(SlotConsumer, ctx, part, props, partOptions?.defaultProps?.children)
     WithContext.displayName = `withContext(${componentName})`
     return WithContext
   }
